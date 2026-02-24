@@ -1,6 +1,7 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
+import { NavBar } from '@/components/nav-bar'
 
 import appCss from '../styles.css?url'
 
@@ -15,7 +16,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'CineTrack - Movies & TV Shows',
       },
     ],
     links: [
@@ -31,12 +32,16 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className="dark bg-black text-white antialiased selection:bg-primary selection:text-primary-foreground"
+    >
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
+        <NavBar />
+        <main className="min-h-screen pb-16">{children}</main>
         <TanStackDevtools
           config={{
             position: 'bottom-right',
