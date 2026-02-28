@@ -49,13 +49,23 @@ const toLimitedList = (
 }
 
 export const getHomePopularFeed = async (): Promise<HomePopularFeed> => {
-  const [movieResponse, tvResponse] = await Promise.all([
-    tmdbGetPopular<TmdbMovieSummary>('movie'),
-    tmdbGetPopular<TmdbTvSummary>('tv'),
+  const [popularMovies, popularShows] = await Promise.all([
+    getPopularMovies(),
+    getPopularShows(),
   ])
 
   return {
-    popularMovies: toLimitedList(movieResponse.results.map(mapMovieToHomeItem)),
-    popularShows: toLimitedList(tvResponse.results.map(mapTvToHomeItem)),
+    popularMovies,
+    popularShows,
   }
+}
+
+export const getPopularMovies = async (): Promise<HomeMediaItem[]> => {
+  const movieResponse = await tmdbGetPopular<TmdbMovieSummary>('movie')
+  return toLimitedList(movieResponse.results.map(mapMovieToHomeItem))
+}
+
+export const getPopularShows = async (): Promise<HomeMediaItem[]> => {
+  const tvResponse = await tmdbGetPopular<TmdbTvSummary>('tv')
+  return toLimitedList(tvResponse.results.map(mapTvToHomeItem))
 }

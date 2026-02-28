@@ -30,14 +30,14 @@ export function NavBar() {
               size="sm"
               className="rounded-full text-zinc-300 hover:text-white"
             >
-              <Link to="/">Movies</Link>
+              <Link to="/movies">Movies</Link>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className="rounded-full text-zinc-300 hover:text-white"
             >
-              <Link to="/">Shows</Link>
+              <Link to="/shows">Shows</Link>
             </Button>
           </div>
         </div>

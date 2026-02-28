@@ -9,9 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ShowsRouteImport } from './routes/shows'
+import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MovieIdRouteImport } from './routes/movie.$id'
 
+const ShowsRoute = ShowsRouteImport.update({
+  id: '/shows',
+  path: '/shows',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoviesRoute = MoviesRouteImport.update({
+  id: '/movies',
+  path: '/movies',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -25,32 +37,54 @@ const MovieIdRoute = MovieIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/movies': typeof MoviesRoute
+  '/shows': typeof ShowsRoute
   '/movie/$id': typeof MovieIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/movies': typeof MoviesRoute
+  '/shows': typeof ShowsRoute
   '/movie/$id': typeof MovieIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/movies': typeof MoviesRoute
+  '/shows': typeof ShowsRoute
   '/movie/$id': typeof MovieIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/movie/$id'
+  fullPaths: '/' | '/movies' | '/shows' | '/movie/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/movie/$id'
-  id: '__root__' | '/' | '/movie/$id'
+  to: '/' | '/movies' | '/shows' | '/movie/$id'
+  id: '__root__' | '/' | '/movies' | '/shows' | '/movie/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MoviesRoute: typeof MoviesRoute
+  ShowsRoute: typeof ShowsRoute
   MovieIdRoute: typeof MovieIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/shows': {
+      id: '/shows'
+      path: '/shows'
+      fullPath: '/shows'
+      preLoaderRoute: typeof ShowsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/movies': {
+      id: '/movies'
+      path: '/movies'
+      fullPath: '/movies'
+      preLoaderRoute: typeof MoviesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -70,6 +104,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MoviesRoute: MoviesRoute,
+  ShowsRoute: ShowsRoute,
   MovieIdRoute: MovieIdRoute,
 }
 export const routeTree = rootRouteImport
