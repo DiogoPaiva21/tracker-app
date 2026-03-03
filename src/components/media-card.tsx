@@ -33,8 +33,8 @@ export function MediaCard({
         'group relative flex w-[160px] md:w-[180px] lg:w-[200px] flex-col gap-3 shrink-0 cursor-pointer',
         className,
       )}
-      to="/movie/$id"
-      params={{ id: id.toString() }}
+      to={`/${type === 'movie' ? 'movie' : 'tv'}/$id` as any}
+      params={{ id: id.toString() } as any}
     >
       <div className="relative aspect-2/3 w-full overflow-hidden rounded-xl border border-white/10 bg-zinc-900 shadow-xl transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.1)] group-hover:border-white/20">
         <img

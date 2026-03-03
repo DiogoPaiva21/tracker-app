@@ -1,5 +1,21 @@
+import { format } from 'date-fns'
 import { useEffect, useState, type MouseEvent } from 'react'
 import { X, Calendar as CalendarIcon, Star } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+
+interface RatingDistribution {
+  1: number
+  2: number
+  3: number
+  4: number
+  5: number
+}
 
 interface ReviewModalProps {
   isOpen: boolean
@@ -8,6 +24,7 @@ interface ReviewModalProps {
   posterPath: string | null
   backdropPath: string | null
   currentRating?: number
+  ratingDistribution?: RatingDistribution
 }
 
 export function ReviewModal({
@@ -17,10 +34,11 @@ export function ReviewModal({
   posterPath,
   backdropPath,
   currentRating = 0,
+  ratingDistribution,
 }: ReviewModalProps) {
   const [rating, setRating] = useState(currentRating)
   const [reviewText, setReviewText] = useState('')
-  const [watchDate, setWatchDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [watchDate, setWatchDate] = useState<Date>()
   const [hoverRating, setHoverRating] = useState(0)
 
   useEffect(() => {
@@ -39,7 +57,7 @@ export function ReviewModal({
     if (isOpen) {
       setRating(currentRating)
       setReviewText('')
-      setWatchDate(new Date().toISOString().split('T')[0])
+      setWatchDate(new Date())
       setHoverRating(0)
     }
   }, [isOpen, currentRating])
@@ -59,7 +77,11 @@ export function ReviewModal({
 
   const handleSave = () => {
     // Here you would typically save the review/log
-    console.log({ rating, reviewText, watchDate })
+    console.log({
+      rating,
+      reviewText,
+      watchDate: watchDate ? watchDate.toISOString() : null,
+    })
     onClose()
   }
 
@@ -123,11 +145,12 @@ export function ReviewModal({
 
         {/* Content Section */}
         <div className="overflow-y-auto custom-scrollbar p-6 sm:p-8 space-y-8">
-          
           {/* Rating Section */}
           <div className="flex items-center justify-between bg-zinc-900/50 p-5 rounded-xl border border-white/5">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-400 block">Your Rating</label>
+              <label className="text-sm font-medium text-zinc-400 block">
+                Your Rating
+              </label>
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -150,35 +173,125 @@ export function ReviewModal({
                 ))}
               </div>
             </div>
-            
-            <div className="text-right space-y-1">
-              <span className="text-sm font-medium text-zinc-500 block">Current</span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold text-white">{rating > 0 ? rating : '-'}</span>
-                <span className="text-zinc-500 font-medium">/ 5</span>
+
+            {ratingDistribution ? (
+              <div className="flex items-center gap-4">
+                <div className="space-y-1.5 flex-1">
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const count =
+                      ratingDistribution[star as keyof RatingDistribution]
+                    const total = Object.values(ratingDistribution).reduce(
+                      (a, b) => a + b,
+                      0,
+                    )
+                    const percentage = total > 0 ? (count / total) * 100 : 0
+                    return (
+                      <div key={star} className="flex items-center gap-2">
+                        <span className="text-xs text-zinc-500 w-3">
+                          {star}
+                        </span>
+                        <Star className="w-3 h-3 fill-zinc-600 text-zinc-600" />
+                        <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-yellow-500 rounded-full transition-all duration-500"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-zinc-500 w-8 text-right">
+                          {count}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="text-center pl-4 border-l border-white/10">
+                  <span className="text-xs font-medium text-zinc-500 block mb-1">
+                    Average
+                  </span>
+                  <div className="flex items-baseline gap-1">
+                    {(() => {
+                      const total = Object.values(ratingDistribution).reduce(
+                        (a, b) => a + b,
+                        0,
+                      )
+                      const weightedSum = Object.entries(
+                        ratingDistribution,
+                      ).reduce(
+                        (sum, [star, count]) => sum + Number(star) * count,
+                        0,
+                      )
+                      const average =
+                        total > 0 ? (weightedSum / total).toFixed(1) : '0.0'
+                      return (
+                        <>
+                          <span className="text-2xl font-bold text-white">
+                            {average}
+                          </span>
+                          <span className="text-zinc-500 font-medium text-sm">
+                            / 5
+                          </span>
+                        </>
+                      )
+                    })()}
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="text-right space-y-1">
+                <span className="text-sm font-medium text-zinc-500 block">
+                  Current
+                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-white">
+                    {rating > 0 ? rating : '-'}
+                  </span>
+                  <span className="text-zinc-500 font-medium">/ 5</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Date Section */}
-          <div className="space-y-2">
-            <label htmlFor="watch-date" className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            <label
+              htmlFor="watch-date"
+              className="text-sm font-medium text-zinc-400 flex items-center gap-2 whitespace-nowrap"
+            >
               <CalendarIcon className="w-4 h-4" />
               Date Watched
             </label>
-            <input
-              type="date"
-              id="watch-date"
-              value={watchDate}
-              onChange={(e) => setWatchDate(e.target.value)}
-              className="w-full bg-zinc-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-hidden focus:ring-2 focus:ring-zinc-700 transition-all [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert-[0.6]"
-            />
+            <Popover>
+              <PopoverTrigger>
+                <Button
+                  variant="outline"
+                  data-empty={!watchDate}
+                  className="flex-1 justify-start text-left font-normal bg-zinc-900/50 border-white/10 text-white hover:bg-zinc-800/60"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <span className={watchDate ? '' : 'text-zinc-500'}>
+                    {watchDate ? format(watchDate, 'PPP') : 'Pick a date'}
+                  </span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-zinc-950 border-white/10">
+                <Calendar
+                  mode="single"
+                  selected={watchDate}
+                  onSelect={setWatchDate}
+                  className="bg-transparent text-white"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Review Section */}
           <div className="space-y-2">
-            <label htmlFor="review" className="text-sm font-medium text-zinc-400 block">
-              Review <span className="text-zinc-600 font-normal">(Optional)</span>
+            <label
+              htmlFor="review"
+              className="text-sm font-medium text-zinc-400 block"
+            >
+              Review{' '}
+              <span className="text-zinc-600 font-normal">(Optional)</span>
             </label>
             <textarea
               id="review"
@@ -188,7 +301,6 @@ export function ReviewModal({
               className="w-full h-32 bg-zinc-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-hidden focus:ring-2 focus:ring-zinc-700 transition-all resize-none custom-scrollbar"
             />
           </div>
-
         </div>
 
         {/* Footer Actions */}
