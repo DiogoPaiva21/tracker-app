@@ -76,3 +76,38 @@ export interface SearchMediaItem {
   releaseDate: string | null
   extraInfo: string | null
 }
+
+export interface TmdbPersonCredit {
+  id: number
+  title?: string
+  name?: string
+  original_title?: string
+  original_name?: string
+  media_type: 'movie' | 'tv'
+  character?: string
+  job?: string
+  department?: string
+  popularity?: number
+  poster_path: string | null
+  release_date?: string
+  first_air_date?: string
+  vote_average: number
+  order?: number
+}
+
+export interface TmdbPersonCombinedCredits {
+  cast: TmdbPersonCredit[]
+  crew: TmdbPersonCredit[]
+}
+
+export interface TmdbPersonDetails {
+  id: number
+  name: string
+  biography: string
+  birthday: string | null
+  deathday: string | null
+  place_of_birth: string | null
+  profile_path: string | null
+  known_for_department: string
+  combined_credits: TmdbPersonCombinedCredits
+}

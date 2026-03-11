@@ -1,19 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
-import { getHomePopularFeed } from '@/lib/tmdb/handlers/home'
 import { CurrentlyWatching } from '@/components/shows/currently-watching'
 import { Watchlist } from '@/components/movies/watchlist'
 import { NextEpisodes } from '@/components/homepage/next-episodes'
 import { RecentActivity } from '@/components/homepage/recent-activity'
 
-const getHomePopularData = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    return getHomePopularFeed()
-  },
-)
-
 export const Route = createFileRoute('/')({
-  loader: async () => getHomePopularData(),
   component: App,
 })
 
@@ -118,7 +109,7 @@ function App() {
       {/* Bottom Section: New Episodes & Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:items-stretch">
         {/* Next Episodes */}
-        <NextEpisodes nextEpisodes={NEXT_EPISODES} /> 
+        <NextEpisodes nextEpisodes={NEXT_EPISODES} />
 
         {/* Recent Activity */}
         <RecentActivity />

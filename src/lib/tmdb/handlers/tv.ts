@@ -34,7 +34,7 @@ interface TmdbTvDetailsResponse {
     name: string
     season_number: number
   }>
-  credits?: {
+  aggregate_credits?: {
     cast?: Array<TmdbTvCreditCast>
     crew?: Array<TmdbTvCreditCrew>
   }
@@ -100,12 +100,16 @@ export const getTvWithSeasonDetails = async (
   }
 
   const tvResponse = await tmdbRequest<TmdbTvDetailsResponse>(
-    `/tv/${encodeURIComponent(normalizedSeriesId)}?append_to_response=credits`,
+    `/tv/${encodeURIComponent(normalizedSeriesId)}?append_to_response=aggregate_credits`,
   )
 
-  const availableSeasonNumbers = tvResponse.seasons.map(
-    (season) => season.season_number,
+  const nonSpecialSeasons = tvResponse.seasons.filter(
+    (season) => season.season_number > 0,
   )
+  const availableSeasonNumbers =
+    nonSpecialSeasons.length > 0
+      ? nonSpecialSeasons.map((season) => season.season_number)
+      : tvResponse.seasons.map((season) => season.season_number)
   const fallbackSeasonNumber = getFallbackSeasonNumber(availableSeasonNumbers)
   const normalizedSeasonNumber =
     typeof seasonNumber === 'number' &&
@@ -127,10 +131,10 @@ export const getTvWithSeasonDetails = async (
     poster_path: tvResponse.poster_path,
     production_companies: tvResponse.production_companies,
     episode_run_time: tvResponse.episode_run_time,
-    seasons: tvResponse.seasons,
+    seasons: nonSpecialSeasons,
     selectedSeasonNumber: seasonResponse.season_number,
     episodes: seasonResponse.episodes,
-    cast: tvResponse.credits?.cast ?? [],
-    crew: tvResponse.credits?.crew ?? [],
+    cast: tvResponse.aggregate_credits?.cast ?? [],
+    crew: tvResponse.aggregate_credits?.crew ?? [],
   }
 }

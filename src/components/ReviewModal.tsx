@@ -1,6 +1,7 @@
 import { format } from 'date-fns'
-import { useEffect, useState, type MouseEvent } from 'react'
-import { X, Calendar as CalendarIcon, Star } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Calendar as CalendarIcon, Star, X } from 'lucide-react'
+import type { MouseEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -65,8 +66,12 @@ export function ReviewModal({
   if (!isOpen) return null
 
   const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original'
-  const posterUrl = posterPath ? `${IMAGE_BASE_URL}${posterPath}` : null
+  const posterUrl = posterPath
+    ? `https://image.tmdb.org/t/p/w154${posterPath}`
+    : null
   const backdropUrl = backdropPath ? `${IMAGE_BASE_URL}${backdropPath}` : null
+
+  console.log(posterUrl)
 
   // Handle click outside to close
   const handleBackdropClick = (e: MouseEvent<HTMLDivElement>) => {
@@ -115,7 +120,7 @@ export function ReviewModal({
           ) : (
             <div className="absolute inset-0 bg-zinc-900" />
           )}
-          <div className="flex items-end gap-6 relative z-10">
+          <div className="flex items-center gap-3 relative z-10">
             {/* Poster Image */}
             <div className="w-24 h-36 sm:w-28 sm:h-40 shrink-0 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-2xl">
               {posterUrl ? (
@@ -134,12 +139,9 @@ export function ReviewModal({
             </div>
 
             {/* Title */}
-            <div className="pb-2">
-              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-1">
-                I Watched...
-              </h2>
-              <p className="text-zinc-400 font-medium text-lg">{title}</p>
-            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              {title}
+            </h2>
           </div>
         </div>
 

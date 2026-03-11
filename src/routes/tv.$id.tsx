@@ -17,6 +17,9 @@ import {
   CarouselItem,
 } from '../components/ui/carousel'
 import { getTvWithSeasonDetails } from '../lib/tmdb/handlers/tv'
+import { CastSection } from '@/components/cast-section'
+import { CrewSection } from '@/components/crew-section'
+import { CrewModal } from '@/components/CrewModal'
 
 const getTvByIdAndSeason = createServerFn({ method: 'GET' })
   .inputValidator((data: { id: string; seasonNumber?: number }) => data)
@@ -42,7 +45,7 @@ function TvDetails() {
   const [selectedSeason, setSelectedSeason] = useState(tv.selectedSeasonNumber)
   const [currentEpisodes, setCurrentEpisodes] = useState(tv.episodes)
   const [isSeasonLoading, setIsSeasonLoading] = useState(false)
-
+  const [isCrewModalOpen, setIsCrewModalOpen] = useState(false)
   useEffect(() => {
     setSelectedSeason(tv.selectedSeasonNumber)
     setCurrentEpisodes(tv.episodes)
@@ -81,19 +84,19 @@ function TvDetails() {
 
   return (
     <div className="relative min-h-screen text-white selection:bg-primary/30 font-sans pb-24 bg-[#09090b]">
+      {/* Full Page Backdrop */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[#09090b]/40 z-10" />
+        <div className="absolute inset-0 bg-linear-to-t from-[#09090b]/80 via-[#09090b]/40 to-transparent z-10" />
+        <img
+          src={backdropUrl}
+          alt={tv.name}
+          className="w-full h-full object-cover object-center mix-blend-screen opacity-50"
+        />
+      </div>
+
       {/* Hero Section */}
       <header className="relative w-full pt-32 pb-16 md:pt-40 md:pb-8">
-        {/* Backdrop Image with soft gradient fade */}
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          <div className="absolute inset-0 bg-linear-to-t from-[#09090b] via-[#09090b]/30 to-transparent z-10" />
-          <div className="absolute inset-0 bg-linear-to-b from-[#09090b]/50 to-transparent z-10" />
-          <img
-            src={backdropUrl}
-            alt={tv.name}
-            className="w-full h-[80vh] object-cover object-top mix-blend-screen opacity-50"
-          />
-        </div>
-
         {/* Content Overlay */}
         <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 flex flex-col md:flex-row gap-4 md:gap-8 items-center md:items-end">
           {/* Poster */}
@@ -113,9 +116,7 @@ function TvDetails() {
               {tv.name}
             </h1>
 
-            <p className="text-lg text-zinc-300">
-              {tv.seasons.length} Seasons • {tv.episode_run_time[0] ?? '-'} mins
-            </p>
+            <p className="text-lg text-zinc-300">{tv.seasons.length} Seasons</p>
 
             <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-2">
               <div className="px-4 py-1.5 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium">
@@ -175,25 +176,22 @@ function TvDetails() {
                         key={episode.id}
                         className="pl-4 basis-[75%] sm:basis-[220px] md:basis-[240px]"
                       >
-                        <div
-                          className="flex flex-col border border-white/10 rounded-xl overflow-hidden transition-colors group relative bg-zinc-800/50"
-                          style={
-                            episode.still_path
-                              ? {
-                                  backgroundImage: `url(${IMAGE_BASE_URL}${episode.still_path})`,
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center',
-                                }
-                              : undefined
-                          }
-                        >
+                        <div className="flex flex-col border border-white/10 rounded-xl overflow-hidden transition-colors group relative bg-zinc-800/50 h-[120px]">
+                          {episode.still_path ? (
+                            <img
+                              src={`${IMAGE_BASE_URL}${episode.still_path}`}
+                              alt={episode.name}
+                              className="absolute inset-0 w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : null}
                           {episode.still_path ? (
                             <>
                               <div className="absolute inset-0 bg-black/55 group-hover:bg-black/45 transition-colors" />
                               <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/35 to-black/10" />
                             </>
                           ) : null}
-                          <div className="p-4 flex-1 flex flex-col justify-between h-[120px] relative z-10">
+                          <div className="p-4 flex-1 flex flex-col justify-between h-full relative z-10">
                             <div>
                               <div className="text-xs text-zinc-400 font-medium mb-1">
                                 Episode {episode.episode_number}
@@ -228,65 +226,10 @@ function TvDetails() {
           </section>
 
           {/* Cast */}
-          <section className="bg-zinc-900/50 border border-white/10 rounded-2xl p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-white">Cast</h2>
-              <button
-                onClick={() => setIsCastModalOpen(true)}
-                className="text-sm text-zinc-400 hover:text-white transition-colors"
-              >
-                See all
-              </button>
-            </div>
-            <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
-              {tv.cast.map((person) => (
-                <div
-                  key={person.id}
-                  className="flex flex-col items-center gap-3 min-w-[80px]"
-                >
-                  <div className="w-20 h-20 rounded-full overflow-hidden border border-white/10 bg-zinc-800 shrink-0">
-                    {person.profile_path ? (
-                      <img
-                        src={`${IMAGE_BASE_URL}${person.profile_path}`}
-                        alt={person.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-zinc-500">
-                        <Users className="w-8 h-8" />
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-sm text-center text-zinc-300 font-medium leading-tight">
-                    {person.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
+          <CastSection cast={tv.cast} setIsCastModalOpen={setIsCastModalOpen} />
 
           {/* Crew */}
-          <section className="bg-zinc-900/50 border border-white/10 rounded-2xl p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-white">Crew</h2>
-              <button className="text-sm text-zinc-400 hover:text-white transition-colors">
-                See all
-              </button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
-              {tv.crew.map((person, idx) => (
-                <div
-                  key={`${person.id}-${idx}`}
-                  className="flex items-center justify-between border-b border-white/5 pb-2"
-                >
-                  <span className="text-zinc-200 font-medium">
-                    {person.name}
-                  </span>
-                  <span className="text-zinc-500 text-sm">{person.job}</span>
-                </div>
-              ))}
-            </div>
-          </section>
+          <CrewSection crew={tv.crew} setIsCrewModalOpen={setIsCrewModalOpen} />
         </div>
 
         {/* Right Column */}
@@ -387,6 +330,14 @@ function TvDetails() {
           4: 234,
           5: 456,
         }}
+      />
+      <CrewModal
+        isOpen={isCrewModalOpen}
+        onClose={() => setIsCrewModalOpen(false)}
+        title={tv.name}
+        posterPath={tv.poster_path}
+        backdropPath={tv.backdrop_path}
+        crew={tv.crew}
       />
     </div>
   )

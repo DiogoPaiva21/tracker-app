@@ -1,16 +1,13 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
-import { Calendar, Users, Plus, PenTool, ListPlus } from 'lucide-react'
+import { Calendar, ListPlus, PenTool, Plus } from 'lucide-react'
 import { CastModal } from '../components/CastModal'
 import { CrewModal } from '../components/CrewModal'
 import { ReviewModal } from '../components/ReviewModal'
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from '../components/ui/carousel'
 import { getMovieWithCredits } from '../lib/tmdb/handlers/movie'
+import { CastSection } from '@/components/cast-section'
+import { CrewSection } from '@/components/crew-section'
 
 const getMovieById = createServerFn({ method: 'GET' })
   .inputValidator((data: { id: string }) => data)
@@ -84,22 +81,26 @@ function MovieDetails() {
       return a.name.localeCompare(b.name)
     })
   const visibleCrew = orderedCrew.slice(0, 10)
+  const formatRating = (rating: number | null, max: number) => {
+    if (rating === null) return 'N/A'
+    return `${rating.toFixed(1)}/${max}`
+  }
 
   return (
     <div className="relative min-h-screen text-white selection:bg-primary/30 font-sans pb-24 bg-[#09090b]">
+      {/* Full Page Backdrop */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[#09090b]/30 z-10" />
+        <div className="absolute inset-0 bg-linear-to-t from-[#09090b]/80 via-[#09090b]/40 to-transparent z-10" />
+        <img
+          src={backdropUrl || ''}
+          alt={movie.title}
+          className="w-full h-full object-cover object-center mix-blend-screen opacity-50"
+        />
+      </div>
+
       {/* Hero Section */}
       <header className="relative w-full pt-32 pb-16 md:pt-40 md:pb-8">
-        {/* Backdrop Image with soft gradient fade */}
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          <div className="absolute inset-0 bg-linear-to-t from-[#09090b] via-[#09090b]/30 to-transparent z-10" />
-          <div className="absolute inset-0 bg-linear-to-b from-[#09090b]/50 to-transparent z-10" />
-          <img
-            src={backdropUrl || ''}
-            alt={movie.title}
-            className="w-full h-[80vh] object-cover object-top mix-blend-screen opacity-50"
-          />
-        </div>
-
         {/* Content Overlay */}
         <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 flex flex-col md:flex-row gap-4 md:gap-8 items-center md:items-end">
           {/* Poster */}
@@ -120,7 +121,7 @@ function MovieDetails() {
               {director ? (
                 <Link
                   to={`/person/${director.id}` as any}
-                  className="text-white/30 text-3xl hover:underline hover:text-white/50"
+                  className="text-white/50 text-3xl hover:underline hover:text-white/70"
                 >
                   by {director.name}
                 </Link>
@@ -133,13 +134,13 @@ function MovieDetails() {
 
             <div className="flex flex-wrap justify-center md:justify-start gap-3">
               <div className="px-4 py-1.5 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium">
-                IMDb 8.8
+                IMDb {formatRating(movie.ratings.imdb, 10)}
               </div>
               <div className="px-4 py-1.5 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium">
-                RT 79%
+                TMDB {formatRating(movie.vote_average, 10)}
               </div>
               <div className="px-4 py-1.5 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium">
-                LB 4.3
+                LB {formatRating(movie.ratings.letterboxd, 5)}
               </div>
             </div>
           </div>
@@ -157,77 +158,16 @@ function MovieDetails() {
           </section>
 
           {/* Cast */}
-          <section className="bg-zinc-900/50 border border-white/10 rounded-2xl p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-white">Cast</h2>
-              <button
-                onClick={() => setIsCastModalOpen(true)}
-                className="text-sm text-zinc-400 hover:text-white transition-colors"
-              >
-                See all
-              </button>
-            </div>
-            <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
-              <Carousel
-                opts={{ align: 'start', dragFree: true }}
-                className="w-full"
-              >
-                <CarouselContent className="-ml-6">
-                  {movie.cast.slice(0, 15).map((person) => (
-                    <CarouselItem
-                      key={person.id}
-                      className="pl-6 basis-[110px] sm:basis-[120px] md:basis-[130px]"
-                    >
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="w-20 h-20 rounded-full overflow-hidden border border-white/10 bg-zinc-800 shrink-0">
-                          {person.profile_path ? (
-                            <img
-                              src={`https://image.tmdb.org/t/p/w185/${person.profile_path}`}
-                              alt={person.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-zinc-500">
-                              <Users className="w-8 h-8" />
-                            </div>
-                          )}
-                        </div>
-                        <span className="text-sm text-center text-zinc-300 font-medium leading-tight">
-                          {person.name}
-                        </span>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
-            </div>
-          </section>
+          <CastSection
+            cast={movie.cast}
+            setIsCastModalOpen={setIsCastModalOpen}
+          />
 
           {/* Crew */}
-          <section className="bg-zinc-900/50 border border-white/10 rounded-2xl p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-white">Crew</h2>
-              <button
-                onClick={() => setIsCrewModalOpen(true)}
-                className="text-sm text-zinc-400 hover:text-white transition-colors"
-              >
-                See all
-              </button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
-              {visibleCrew.map((person, idx) => (
-                <div
-                  key={`${person.id}-${idx}`}
-                  className="flex items-center justify-between border-b border-white/5 pb-2"
-                >
-                  <span className="text-zinc-200 font-medium">
-                    {person.name}
-                  </span>
-                  <span className="text-zinc-500 text-sm">{person.job}</span>
-                </div>
-              ))}
-            </div>
-          </section>
+          <CrewSection
+            crew={visibleCrew}
+            setIsCrewModalOpen={setIsCrewModalOpen}
+          />
         </div>
 
         {/* Right Column */}
@@ -340,3 +280,4 @@ function MovieDetails() {
     </div>
   )
 }
+

@@ -1,14 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+import type { MediaCardProps } from '@/components/media-card'
 import { MediaCarousel } from '@/components/movies/media-carousel'
 import { Watchlist } from '@/components/movies/watchlist'
 import { NextMovies } from '@/components/movies/next-movies'
-import { MediaCardProps } from '@/components/media-card'
-import { getPopularMovies } from '@/lib/tmdb/handlers/home'
+import { getTrendingMovies } from '@/lib/mdblist/handlers/movies'
 
-const getPopularMoviesData = createServerFn({ method: 'GET' }).handler(async () => {
-  return getPopularMovies()
-})
+const getPopularMoviesData = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    return getTrendingMovies()
+  },
+)
 
 export const Route = createFileRoute('/movies')({
   loader: async () => getPopularMoviesData(),
@@ -42,11 +44,12 @@ const MOVIE_WATCHLIST = [
   },
 ]
 
-const LAST_WATCHED_BY_FRIENDS: MediaCardProps[] = [
+const LAST_WATCHED_BY_FRIENDS: Array<MediaCardProps> = [
   {
     id: 'lw1',
     title: 'Furiosa: A Mad Max Saga',
-    image: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/iADOJ8Zymht2JPMoy3R7xceZprc.jpg',
+    image:
+      'https://image.tmdb.org/t/p/w600_and_h900_bestv2/iADOJ8Zymht2JPMoy3R7xceZprc.jpg',
     rating: 7.8,
     year: 2024,
     type: 'movie',
@@ -54,7 +57,8 @@ const LAST_WATCHED_BY_FRIENDS: MediaCardProps[] = [
   {
     id: 'lw2',
     title: 'Inside Out 2',
-    image: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg',
+    image:
+      'https://image.tmdb.org/t/p/w600_and_h900_bestv2/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg',
     rating: 7.7,
     year: 2024,
     type: 'movie',
@@ -62,7 +66,8 @@ const LAST_WATCHED_BY_FRIENDS: MediaCardProps[] = [
   {
     id: 'lw3',
     title: 'Deadpool & Wolverine',
-    image: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg',
+    image:
+      'https://image.tmdb.org/t/p/w600_and_h900_bestv2/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg',
     rating: 7.8,
     year: 2024,
     type: 'movie',
@@ -70,7 +75,8 @@ const LAST_WATCHED_BY_FRIENDS: MediaCardProps[] = [
   {
     id: 'lw4',
     title: 'A Quiet Place: Day One',
-    image: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/yrpPYKijwdMHTE36mNWfFEepScc.jpg',
+    image:
+      'https://image.tmdb.org/t/p/w600_and_h900_bestv2/yrpPYKijwdMHTE36mNWfFEepScc.jpg',
     rating: 6.9,
     year: 2024,
     type: 'movie',
@@ -78,7 +84,8 @@ const LAST_WATCHED_BY_FRIENDS: MediaCardProps[] = [
   {
     id: 'lw5',
     title: 'Alien: Romulus',
-    image: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/b33nnKl1GSFbao4l3fZj0B9jS9h.jpg',
+    image:
+      'https://image.tmdb.org/t/p/w600_and_h900_bestv2/b33nnKl1GSFbao4l3fZj0B9jS9h.jpg',
     rating: 7.2,
     year: 2024,
     type: 'movie',
@@ -125,7 +132,10 @@ function MoviesPage() {
       <Watchlist watchlist={MOVIE_WATCHLIST} />
 
       {/* Last Watched by Friends */}
-      <MediaCarousel title="Last Watched by Friends" items={LAST_WATCHED_BY_FRIENDS} />
+      <MediaCarousel
+        title="Last Watched by Friends"
+        items={LAST_WATCHED_BY_FRIENDS}
+      />
 
       {/* Next Movies */}
       <NextMovies title="Next Movies" movies={NEXT_MOVIES} />

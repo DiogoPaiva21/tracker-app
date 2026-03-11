@@ -62,7 +62,8 @@ const formatDate = (value: string | null) => {
 
 const getResultHref = (result: SearchMediaItem) => {
   if (result.mediaType === 'movie') return `/movie/${result.id}`
-  if (result.mediaType === 'tv') return '/shows'
+  if (result.mediaType === 'tv') return `/tv/${result.id}`
+  if (result.mediaType === 'person') return `/person/${result.id}`
   return null
 }
 

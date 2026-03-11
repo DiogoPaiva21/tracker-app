@@ -22,7 +22,9 @@ interface TmdbMovieCreditResponse {
 interface TmdbMovieResponse {
   id: number
   title: string
+  imdb_id: string | null
   overview: string
+  vote_average: number
   runtime: number | null
   release_date: string
   backdrop_path: string | null
@@ -37,7 +39,9 @@ interface TmdbMovieResponse {
 export interface MovieDetails {
   id: number
   title: string
+  imdb_id: string | null
   overview: string
+  vote_average: number
   runtime: number | null
   release_date: string
   backdrop_path: string | null
@@ -48,6 +52,10 @@ export interface MovieDetails {
   }>
   cast: Array<TmdbMovieCreditCast>
   crew: Array<TmdbMovieCreditCrew>
+  ratings: {
+    imdb: number | null
+    letterboxd: number | null
+  }
 }
 
 export const getMovieWithCredits = async (
@@ -66,13 +74,19 @@ export const getMovieWithCredits = async (
   return {
     id: response.id,
     title: response.title,
+    imdb_id: response.imdb_id,
     overview: response.overview,
+    vote_average: response.vote_average,
     runtime: response.runtime,
     release_date: response.release_date,
     backdrop_path: response.backdrop_path,
     poster_path: response.poster_path,
     production_companies: response.production_companies,
-    cast: response.credits?.cast ?? [],
-    crew: response.credits?.crew ?? [],
+    cast: response.credits.cast,
+    crew: response.credits.crew,
+    ratings: {
+      imdb: null,
+      letterboxd: null,
+    },
   }
 }
