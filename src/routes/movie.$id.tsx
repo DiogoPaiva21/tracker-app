@@ -8,6 +8,7 @@ import { ReviewModal } from '../components/ReviewModal'
 import { getMovieWithCredits } from '../lib/tmdb/handlers/movie'
 import { CastSection } from '@/components/cast-section'
 import { CrewSection } from '@/components/crew-section'
+import { sortCrew } from '@/lib/movies/mutils'
 
 const getMovieById = createServerFn({ method: 'GET' })
   .inputValidator((data: { id: string }) => data)
@@ -34,52 +35,10 @@ function MovieDetails() {
   const posterUrl = movie.poster_path
     ? `${IMAGE_BASE_URL}${movie.poster_path}`
     : null
-  const getCrewImportance = (job: string) => {
-    const normalizedJob = job.toLowerCase()
-
-    if (normalizedJob.includes('producer')) return 0
-    if (
-      normalizedJob.includes('writer') ||
-      normalizedJob.includes('screenplay') ||
-      normalizedJob.includes('story')
-    )
-      return 1
-    if (normalizedJob.includes('director of photography')) return 2
-    if (normalizedJob.includes('editor')) return 3
-    if (
-      normalizedJob.includes('music') ||
-      normalizedJob.includes('composer') ||
-      normalizedJob.includes('sound')
-    )
-      return 4
-    if (
-      normalizedJob.includes('production design') ||
-      normalizedJob.includes('art direction')
-    )
-      return 5
-    if (normalizedJob.includes('costume') || normalizedJob.includes('makeup'))
-      return 6
-    if (normalizedJob.includes('casting')) return 7
-    if (
-      normalizedJob.includes('visual effects') ||
-      normalizedJob.includes('vfx')
-    )
-      return 8
-    return 9
-  }
   const director = movie.crew.find((person) => person.job === 'Director')
-  const orderedCrew = movie.crew
-    .filter((person) => person.job !== 'Director')
-    .sort((a, b) => {
-      const importanceCompare =
-        getCrewImportance(a.job) - getCrewImportance(b.job)
-      if (importanceCompare !== 0) return importanceCompare
-
-      const jobCompare = a.job.localeCompare(b.job)
-      if (jobCompare !== 0) return jobCompare
-
-      return a.name.localeCompare(b.name)
-    })
+  const orderedCrew = sortCrew(
+    movie.crew.filter((person) => person.job !== 'Director'),
+  )
   const visibleCrew = orderedCrew.slice(0, 10)
   const formatRating = (rating: number | null, max: number) => {
     if (rating === null) return 'N/A'
@@ -280,4 +239,3 @@ function MovieDetails() {
     </div>
   )
 }
-

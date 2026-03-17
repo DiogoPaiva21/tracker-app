@@ -50,6 +50,7 @@ export interface MdblistShowSummary {
   release_date: string | null
   release_year: number | null
   spoken_language: string | null
+  ratings: Array<MdblistRating> | null
 }
 
 export interface MdblistTrendingResponse {
