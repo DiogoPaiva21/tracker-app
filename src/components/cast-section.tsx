@@ -1,6 +1,6 @@
-import { Carousel, CarouselContent, CarouselItem } from './ui/carousel'
 import { Link } from '@tanstack/react-router'
 import { Users } from 'lucide-react'
+import { Carousel, CarouselContent, CarouselItem } from './ui/carousel'
 
 interface CastMember {
   id: number
@@ -9,7 +9,7 @@ interface CastMember {
 }
 
 interface CastSectionProps {
-  cast: CastMember[]
+  cast: Array<CastMember>
   setIsCastModalOpen: (isOpen: boolean) => void
 }
 

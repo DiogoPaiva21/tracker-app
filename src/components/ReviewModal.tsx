@@ -65,13 +65,10 @@ export function ReviewModal({
 
   if (!isOpen) return null
 
-  const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original'
-  const posterUrl = posterPath
-    ? `https://image.tmdb.org/t/p/w154${posterPath}`
-    : null
-  const backdropUrl = backdropPath ? `${IMAGE_BASE_URL}${backdropPath}` : null
-
-  console.log(posterUrl)
+  const POSTER_BASE = 'https://image.tmdb.org/t/p/w154'
+  const BACKDROP_BASE = 'https://image.tmdb.org/t/p/w1280'
+  const posterUrl = posterPath ? `${POSTER_BASE}${posterPath}` : null
+  const backdropUrl = backdropPath ? `${BACKDROP_BASE}${backdropPath}` : null
 
   // Handle click outside to close
   const handleBackdropClick = (e: MouseEvent<HTMLDivElement>) => {
@@ -90,6 +87,17 @@ export function ReviewModal({
     onClose()
   }
 
+  const getAverage = () => {
+    if (!ratingDistribution) return '0.0'
+    const total = Object.values(ratingDistribution).reduce((a, b) => a + b, 0)
+    const weightedSum = Object.entries(ratingDistribution).reduce(
+      (sum, [star, count]) => sum + Number(star) * count,
+      0,
+    )
+    return total > 0 ? (weightedSum / total).toFixed(1) : '0.0'
+  }
+  const average = getAverage()
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm"
@@ -107,7 +115,7 @@ export function ReviewModal({
         </button>
 
         {/* Top Header Section */}
-        <div className="relative w-full p-6 sm:p-8 shrink-0 overflow-hidden ">
+        <div className="relative w-full p-6 sm:px-8 sm:pt-6 sm:pb-4 shrink-0 overflow-hidden ">
           {backdropUrl ? (
             <>
               <img
@@ -120,9 +128,9 @@ export function ReviewModal({
           ) : (
             <div className="absolute inset-0 bg-zinc-900" />
           )}
-          <div className="flex items-center gap-3 relative z-10">
+          <div className="flex items-end gap-4 relative z-10">
             {/* Poster Image */}
-            <div className="w-24 h-36 sm:w-28 sm:h-40 shrink-0 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-2xl">
+            <div className="w-24 h-auto sm:w-32 sm:h-auto shrink-0 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-2xl">
               {posterUrl ? (
                 <img
                   src={posterUrl}
@@ -139,14 +147,17 @@ export function ReviewModal({
             </div>
 
             {/* Title */}
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-              {title}
-            </h2>
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-1">
+                {title}
+              </h2>
+              <p className="text-zinc-400 font-medium">Review or Log</p>
+            </div>
           </div>
         </div>
 
         {/* Content Section */}
-        <div className="overflow-y-auto custom-scrollbar p-6 sm:p-8 space-y-8">
+        <div className="overflow-y-auto custom-scrollbar px-6 sm:px-8 sm:py-2 space-y-4">
           {/* Rating Section */}
           <div className="flex items-center justify-between bg-zinc-900/50 p-5 rounded-xl border border-white/5">
             <div className="space-y-2">
@@ -177,64 +188,47 @@ export function ReviewModal({
             </div>
 
             {ratingDistribution ? (
-              <div className="flex items-center gap-4">
-                <div className="space-y-1.5 flex-1">
-                  {[5, 4, 3, 2, 1].map((star) => {
-                    const count =
-                      ratingDistribution[star as keyof RatingDistribution]
-                    const total = Object.values(ratingDistribution).reduce(
-                      (a, b) => a + b,
-                      0,
-                    )
-                    const percentage = total > 0 ? (count / total) * 100 : 0
-                    return (
-                      <div key={star} className="flex items-center gap-2">
-                        <span className="text-xs text-zinc-500 w-3">
-                          {star}
-                        </span>
-                        <Star className="w-3 h-3 fill-zinc-600 text-zinc-600" />
-                        <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="flex items-end gap-3">
+                <Star className="w-3 h-3 fill-zinc-500 text-zinc-500" />
+                {/* Vertical Bar Chart */}
+                {(() => {
+                  const maxCount = Math.max(
+                    ...Object.values(ratingDistribution),
+                  )
+                  return (
+                    <div className="flex items-end gap-1 h-12">
+                      {[1, 2, 3, 4, 5].map((star) => {
+                        const count =
+                          ratingDistribution[star as keyof RatingDistribution]
+                        const heightPercent =
+                          maxCount > 0 ? (count / maxCount) * 100 : 0
+                        return (
                           <div
-                            className="h-full bg-yellow-500 rounded-full transition-all duration-500"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                        <span className="text-xs text-zinc-500 w-8 text-right">
-                          {count}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
-                <div className="text-center pl-4 border-l border-white/10">
-                  <span className="text-xs font-medium text-zinc-500 block mb-1">
-                    Average
+                            key={star}
+                            className="relative w-4 h-full rounded-none overflow-hidden"
+                          >
+                            <div
+                              className="absolute bottom-0 left-0 right-0 bg-zinc-500 rounded-none transition-all duration-500"
+                              style={{ height: `${heightPercent}%` }}
+                            />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
+
+                <div className="flex flex-col items-center">
+                  <span className="text-xl font-bold text-zinc-400 leading-none mb-2">
+                    {average}
                   </span>
-                  <div className="flex items-baseline gap-1">
-                    {(() => {
-                      const total = Object.values(ratingDistribution).reduce(
-                        (a, b) => a + b,
-                        0,
-                      )
-                      const weightedSum = Object.entries(
-                        ratingDistribution,
-                      ).reduce(
-                        (sum, [star, count]) => sum + Number(star) * count,
-                        0,
-                      )
-                      const average =
-                        total > 0 ? (weightedSum / total).toFixed(1) : '0.0'
-                      return (
-                        <>
-                          <span className="text-2xl font-bold text-white">
-                            {average}
-                          </span>
-                          <span className="text-zinc-500 font-medium text-sm">
-                            / 5
-                          </span>
-                        </>
-                      )
-                    })()}
+                  <div className="flex gap-0">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-3 w-3 fill-zinc-500 text-zinc-500"
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
@@ -257,10 +251,9 @@ export function ReviewModal({
           <div className="flex items-center gap-4">
             <label
               htmlFor="watch-date"
-              className="text-sm font-medium text-zinc-400 flex items-center gap-2 whitespace-nowrap"
+              className="text-sm font-medium text-zinc-400 flex items-center whitespace-nowrap"
             >
-              <CalendarIcon className="w-4 h-4" />
-              Date Watched
+              Watched On
             </label>
             <Popover>
               <PopoverTrigger>
@@ -269,7 +262,7 @@ export function ReviewModal({
                   data-empty={!watchDate}
                   className="flex-1 justify-start text-left font-normal bg-zinc-900/50 border-white/10 text-white hover:bg-zinc-800/60"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="h-4 w-4" />
                   <span className={watchDate ? '' : 'text-zinc-500'}>
                     {watchDate ? format(watchDate, 'PPP') : 'Pick a date'}
                   </span>
@@ -306,10 +299,10 @@ export function ReviewModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-white/10 bg-zinc-950/50 flex justify-end gap-3 shrink-0">
+        <div className="px-8 py-4 border-t border-white/10 bg-zinc-950/50 flex justify-end gap-3 shrink-0">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+            className="px-5 py-2.5 rounded-lg text-sm font-medium border border-zinc-400/30 text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
           >
             Cancel
           </button>

@@ -1,5 +1,7 @@
-import { useEffect, type MouseEvent } from 'react'
-import { X, Users } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { Users, X } from 'lucide-react'
+import { useEffect } from 'react'
+import type { MouseEvent } from 'react'
 
 interface CastMember {
   id: number
@@ -14,7 +16,7 @@ interface CastModalProps {
   title: string
   posterPath: string | null
   backdropPath: string | null
-  cast: CastMember[]
+  cast: Array<CastMember>
 }
 
 export function CastModal({
@@ -38,9 +40,11 @@ export function CastModal({
 
   if (!isOpen) return null
 
-  const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original'
-  const posterUrl = posterPath ? `${IMAGE_BASE_URL}${posterPath}` : null
-  const backdropUrl = backdropPath ? `${IMAGE_BASE_URL}${backdropPath}` : null
+  const PROFILE_BASE = 'https://image.tmdb.org/t/p/w185'
+  const POSTER_BASE = 'https://image.tmdb.org/t/p/w154'
+  const BACKDROP_BASE = 'https://image.tmdb.org/t/p/w1280'
+  const posterUrl = posterPath ? `${POSTER_BASE}${posterPath}` : null
+  const backdropUrl = backdropPath ? `${BACKDROP_BASE}${backdropPath}` : null
 
   // Handle click outside to close
   const handleBackdropClick = (e: MouseEvent<HTMLDivElement>) => {
@@ -66,7 +70,7 @@ export function CastModal({
         </button>
 
         {/* Top Header Section */}
-        <div className="relative w-full p-6 sm:p-8 shrink-0 overflow-hidden ">
+        <div className="relative w-full p-6 sm:px-8 sm:pt-6 sm:pb-4 shrink-0 overflow-hidden ">
           {backdropUrl ? (
             <>
               <img
@@ -79,9 +83,9 @@ export function CastModal({
           ) : (
             <div className="absolute inset-0 bg-zinc-900" />
           )}
-          <div className="flex items-end gap-6 relative z-10">
+          <div className="flex items-end gap-4 relative z-10">
             {/* Poster Image */}
-            <div className="w-24 h-36 sm:w-28 sm:h-40 shrink-0 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-2xl">
+            <div className="w-24 h-auto sm:w-32 sm:h-auto shrink-0 rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-2xl">
               {posterUrl ? (
                 <img
                   src={posterUrl}
@@ -98,28 +102,30 @@ export function CastModal({
             </div>
 
             {/* Title */}
-            <div className="pb-2">
+            <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-1">
                 {title}
               </h2>
-              <p className="text-zinc-400 font-medium">Full Cast & Crew</p>
+              <p className="text-zinc-400 font-medium">Full Cast</p>
             </div>
           </div>
         </div>
 
         {/* Cast List Section */}
         <div className="overflow-hidden p-2">
-          <div className="overflow-y-auto px-4 my-2 space-y-2 custom-scrollbar max-h-100">
-            {cast.map((person) => (
-              <div
-                key={person.id}
+          <div className="overflow-y-auto px-6 my-2 space-y-2 custom-scrollbar max-h-100">
+            {cast.map((person, idx) => (
+              <Link
+                key={`${person.id}-${idx}`}
+                to="/person/$id"
+                params={{ id: String(person.id) }}
                 className="flex min-h-20 items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors group border border-white/10"
               >
                 {/* Profile Image */}
                 <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full overflow-hidden border border-white/10 bg-zinc-900">
                   {person.profile_path ? (
                     <img
-                      src={`${IMAGE_BASE_URL}${person.profile_path}`}
+                      src={`${PROFILE_BASE}${person.profile_path}`}
                       alt={person.name}
                       className="w-full h-full object-cover"
                     />
@@ -139,7 +145,7 @@ export function CastModal({
                     {person.character}
                   </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
