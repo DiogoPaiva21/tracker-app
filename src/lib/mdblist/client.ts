@@ -31,3 +31,11 @@ export const getTrending = <T>(mediaType: 'movie' | 'tv') => {
     `lists/${MDBLIST_USERNAME}/${list}/items?limit=20&append_to_response=poster%2Cratings`,
   )
 }
+
+export const getMediaInfo = <T>(
+  mediaProvider: string,
+  mediaType: 'movie' | 'show',
+  mediaId: string,
+) => {
+  return mdbRequest<T>(`${mediaProvider}/${mediaType}/${mediaId}`)
+}

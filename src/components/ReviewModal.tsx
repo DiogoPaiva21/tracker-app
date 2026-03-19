@@ -178,8 +178,8 @@ export function ReviewModal({
                     <Star
                       className={`w-8 h-8 transition-all ${
                         star <= (hoverRating || rating)
-                          ? 'fill-yellow-400 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)] scale-110'
-                          : 'fill-transparent text-zinc-600 hover:text-zinc-500'
+                          ? 'fill-yellow-300 text-yellow-300 '
+                          : 'fill-transparent stroke-zinc-400 hover:stroke-yellow-300'
                       }`}
                     />
                   </button>

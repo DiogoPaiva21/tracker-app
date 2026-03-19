@@ -1,14 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { useEffect, useState } from 'react'
-import {
-  Calendar,
-  Users,
-  Plus,
-  PenTool,
-  ListPlus,
-  ChevronDown,
-} from 'lucide-react'
+import { Calendar, ChevronDown, ListPlus, PenTool, Plus } from 'lucide-react'
 import { CastModal } from '../components/CastModal'
 import { ReviewModal } from '../components/ReviewModal'
 import {
@@ -18,8 +11,6 @@ import {
 } from '../components/ui/carousel'
 import { getTvWithSeasonDetails } from '../lib/tmdb/handlers/tv'
 import { CastSection } from '@/components/cast-section'
-import { CrewSection } from '@/components/crew-section'
-import { CrewModal } from '@/components/CrewModal'
 
 const getTvByIdAndSeason = createServerFn({ method: 'GET' })
   .inputValidator((data: { id: string; seasonNumber?: number }) => data)
@@ -44,15 +35,23 @@ function TvDetails() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
   const [selectedSeason, setSelectedSeason] = useState(tv.selectedSeasonNumber)
   const [currentEpisodes, setCurrentEpisodes] = useState(tv.episodes)
+  const [seasonEpisodesCache, setSeasonEpisodesCache] = useState<
+    Record<number, typeof tv.episodes>
+  >({ [tv.selectedSeasonNumber]: tv.episodes })
   const [isSeasonLoading, setIsSeasonLoading] = useState(false)
-  const [isCrewModalOpen, setIsCrewModalOpen] = useState(false)
+
   useEffect(() => {
     setSelectedSeason(tv.selectedSeasonNumber)
     setCurrentEpisodes(tv.episodes)
-  }, [tv.selectedSeasonNumber, tv.episodes])
+    setSeasonEpisodesCache({ [tv.selectedSeasonNumber]: tv.episodes })
+  }, [id, tv.selectedSeasonNumber, tv.episodes])
 
   useEffect(() => {
-    if (selectedSeason === tv.selectedSeasonNumber) return
+    if (selectedSeason === tv.selectedSeasonNumber) {
+      setCurrentEpisodes(tv.episodes)
+      setIsSeasonLoading(false)
+      return
+    }
 
     let isMounted = true
     setIsSeasonLoading(true)
@@ -61,6 +60,10 @@ function TvDetails() {
       .then((response) => {
         if (!isMounted) return
         setCurrentEpisodes(response.episodes)
+        setSeasonEpisodesCache((prev) => ({
+          ...prev,
+          [selectedSeason]: response.episodes,
+        }))
       })
       .catch(() => {
         if (!isMounted) return
@@ -74,9 +77,17 @@ function TvDetails() {
     return () => {
       isMounted = false
     }
-  }, [id, selectedSeason, tv.selectedSeasonNumber])
+  }, [
+    id,
+    selectedSeason,
+    seasonEpisodesCache,
+    tv.selectedSeasonNumber,
+    tv.episodes,
+  ])
 
   const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original'
+  const LOGO_BASE_URL = `https://image.tmdb.org/t/p/w300`
+  const logoUrl = tv.logo_path ? `${LOGO_BASE_URL}${tv.logo_path}` : null
   const backdropUrl = tv.backdrop_path
     ? `${IMAGE_BASE_URL}${tv.backdrop_path}`
     : ''
@@ -111,14 +122,20 @@ function TvDetails() {
           </div>
 
           {/* Title & Info */}
-          <div className="flex-1 space-y-4 text-center md:text-left z-30">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
-              {tv.name}
-            </h1>
+          <div className="flex-1 space-y-6 text-center md:text-left z-30">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={tv.name}
+                className="max-w-40 md:max-w-50 lg:max-w-68 h-auto object-contain drop-shadow-2xl"
+              />
+            ) : (
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
+                {tv.name}
+              </h1>
+            )}
 
-            <p className="text-lg text-zinc-300">{tv.seasons.length} Seasons</p>
-
-            <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-2">
+            <div className="flex flex-wrap justify-center md:justify-start gap-3">
               <div className="px-4 py-1.5 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium">
                 IMDb 9.5
               </div>
@@ -227,9 +244,6 @@ function TvDetails() {
 
           {/* Cast */}
           <CastSection cast={tv.cast} setIsCastModalOpen={setIsCastModalOpen} />
-
-          {/* Crew */}
-          <CrewSection crew={tv.crew} setIsCrewModalOpen={setIsCrewModalOpen} />
         </div>
 
         {/* Right Column */}
@@ -330,14 +344,6 @@ function TvDetails() {
           4: 234,
           5: 456,
         }}
-      />
-      <CrewModal
-        isOpen={isCrewModalOpen}
-        onClose={() => setIsCrewModalOpen(false)}
-        title={tv.name}
-        posterPath={tv.poster_path}
-        backdropPath={tv.backdrop_path}
-        crew={tv.crew}
       />
     </div>
   )

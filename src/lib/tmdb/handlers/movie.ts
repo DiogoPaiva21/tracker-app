@@ -19,6 +19,15 @@ interface TmdbMovieCreditResponse {
   crew: Array<TmdbMovieCreditCrew>
 }
 
+interface TmdbMovieImagesArray {
+  aspect_ratio: number
+  file_path: string
+  height: number
+  iso_639_1: string | null
+  width: number
+  vote_average: number
+}
+
 interface TmdbMovieResponse {
   id: number
   title: string
@@ -34,6 +43,12 @@ interface TmdbMovieResponse {
     name: string
   }>
   credits: TmdbMovieCreditResponse
+  images: {
+    id: number
+    backdrops: Array<TmdbMovieImagesArray>
+    posters: Array<TmdbMovieImagesArray>
+    logos: Array<TmdbMovieImagesArray>
+  }
 }
 
 export interface MovieDetails {
@@ -46,6 +61,7 @@ export interface MovieDetails {
   release_date: string
   backdrop_path: string | null
   poster_path: string | null
+  logo_path: string | null
   production_companies: Array<{
     id: number
     name: string
@@ -68,8 +84,14 @@ export const getMovieWithCredits = async (
   }
 
   const response = await tmdbRequest<TmdbMovieResponse>(
-    `/movie/${encodeURIComponent(normalizedMovieId)}?append_to_response=credits`,
+    `/movie/${encodeURIComponent(normalizedMovieId)}?append_to_response=credits,images`,
   )
+
+  // Get logo path with highest vote_average and that the iso_639_1 is equal to "en"
+  const logoPath =
+    response.images.logos
+      .filter((logo) => logo.iso_639_1 === 'en')
+      .sort((a, b) => b.vote_average - a.vote_average)[0]?.file_path ?? null
 
   return {
     id: response.id,
@@ -81,6 +103,7 @@ export const getMovieWithCredits = async (
     release_date: response.release_date,
     backdrop_path: response.backdrop_path,
     poster_path: response.poster_path,
+    logo_path: logoPath,
     production_companies: response.production_companies,
     cast: response.credits.cast,
     crew: response.credits.crew,

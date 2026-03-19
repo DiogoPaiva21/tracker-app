@@ -38,6 +38,12 @@ interface TmdbTvDetailsResponse {
     cast?: Array<TmdbTvCreditCast>
     crew?: Array<TmdbTvCreditCrew>
   }
+  images: {
+    id: number
+    backdrops: Array<TmdbTvImagesArray>
+    posters: Array<TmdbTvImagesArray>
+    logos: Array<TmdbTvImagesArray>
+  }
 }
 
 interface TmdbTvSeasonResponse {
@@ -52,6 +58,15 @@ interface TmdbTvSeasonResponse {
   }>
 }
 
+interface TmdbTvImagesArray {
+  aspect_ratio: number
+  file_path: string
+  height: number
+  iso_639_1: string | null
+  width: number
+  vote_average: number
+}
+
 export interface TvDetailsWithSeason {
   id: number
   name: string
@@ -59,6 +74,7 @@ export interface TvDetailsWithSeason {
   first_air_date: string
   backdrop_path: string | null
   poster_path: string | null
+  logo_path: string | null
   production_companies: Array<{
     id: number
     name: string
@@ -86,7 +102,7 @@ export interface TvDetailsWithSeason {
 
 const getFallbackSeasonNumber = (seasonNumbers: Array<number>) => {
   const firstNonSpecialSeason = seasonNumbers.find((season) => season > 0)
-  return firstNonSpecialSeason ?? seasonNumbers[0] ?? 1
+  return firstNonSpecialSeason
 }
 
 export const getTvWithSeasonDetails = async (
@@ -100,7 +116,7 @@ export const getTvWithSeasonDetails = async (
   }
 
   const tvResponse = await tmdbRequest<TmdbTvDetailsResponse>(
-    `/tv/${encodeURIComponent(normalizedSeriesId)}?append_to_response=aggregate_credits`,
+    `/tv/${encodeURIComponent(normalizedSeriesId)}?append_to_response=aggregate_credits,images`,
   )
 
   const nonSpecialSeasons = tvResponse.seasons.filter(
@@ -122,6 +138,11 @@ export const getTvWithSeasonDetails = async (
     `/tv/${encodeURIComponent(normalizedSeriesId)}/season/${normalizedSeasonNumber}`,
   )
 
+  const logoPath =
+    tvResponse.images.logos
+      .filter((logo) => logo.iso_639_1 === 'en')
+      .sort((a, b) => b.vote_average - a.vote_average)[0]?.file_path ?? null
+
   return {
     id: tvResponse.id,
     name: tvResponse.name,
@@ -129,6 +150,7 @@ export const getTvWithSeasonDetails = async (
     first_air_date: tvResponse.first_air_date,
     backdrop_path: tvResponse.backdrop_path,
     poster_path: tvResponse.poster_path,
+    logo_path: logoPath,
     production_companies: tvResponse.production_companies,
     episode_run_time: tvResponse.episode_run_time,
     seasons: nonSpecialSeasons,

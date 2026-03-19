@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
-import { Calendar, ListPlus, PenTool, Plus } from 'lucide-react'
+import { Calendar, ListPlus, PenTool, Plus, Star } from 'lucide-react'
 import { CastModal } from '../components/CastModal'
 import { CrewModal } from '../components/CrewModal'
 import { ReviewModal } from '../components/ReviewModal'
@@ -24,16 +24,20 @@ export const Route = createFileRoute('/movie/$id')({
 function MovieDetails() {
   const movie = Route.useLoaderData()
   const [selectedRating, setSelectedRating] = useState(0)
+  const [hoveredRating, setHoveredRating] = useState(0)
   const [isCastModalOpen, setIsCastModalOpen] = useState(false)
   const [isCrewModalOpen, setIsCrewModalOpen] = useState(false)
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
 
   const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original'
+  const LOGO_BASE_URL = `https://image.tmdb.org/t/p/w300`
+  const POSTER_BASE_URL = `https://image.tmdb.org/t/p/w342`
+  const logoUrl = movie.logo_path ? `${LOGO_BASE_URL}${movie.logo_path}` : null
   const backdropUrl = movie.backdrop_path
     ? `${IMAGE_BASE_URL}${movie.backdrop_path}`
     : null
   const posterUrl = movie.poster_path
-    ? `${IMAGE_BASE_URL}${movie.poster_path}`
+    ? `${POSTER_BASE_URL}${movie.poster_path}`
     : null
   const director = movie.crew.find((person) => person.job === 'Director')
   const orderedCrew = sortCrew(
@@ -75,19 +79,27 @@ function MovieDetails() {
 
           {/* Title & Info */}
           <div className="flex-1 space-y-4 text-center md:text-left z-30">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
-              {movie.title}{' '}
-              {director ? (
+            <div className="flex flex-row items-baseline">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={movie.title}
+                  className="max-w-40 md:max-w-50 lg:max-w-68 h-auto object-contain drop-shadow-2xl"
+                />
+              ) : (
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
+                  {movie.title}
+                </h1>
+              )}
+              {director && (
                 <Link
                   to={`/person/${director.id}` as any}
-                  className="text-white/50 text-3xl hover:underline hover:text-white/70"
+                  className="text-white/60 text-4xl font-bold tracking-tight ml-6 hover:underline hover:text-white/70"
                 >
                   by {director.name}
                 </Link>
-              ) : (
-                ''
               )}
-            </h1>
+            </div>
 
             <p className="text-lg ml-1 text-zinc-300">{movie.runtime} mins</p>
 
@@ -133,28 +145,31 @@ function MovieDetails() {
         <div className="lg:col-span-4 space-y-6">
           {/* Action Card */}
           <div className="bg-zinc-900/80 border border-white/10 rounded-2xl overflow-hidden">
-            <div className="p-6 flex justify-center gap-2 border-b border-white/10">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setSelectedRating(i)}
-                  aria-label={`Rate ${i} star${i > 1 ? 's' : ''}`}
-                  className="cursor-pointer transition-colors"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    className={`w-8 h-8 transition-colors ${
-                      i <= selectedRating
-                        ? 'fill-yellow-400 stroke-yellow-300 text-yellow-300'
-                        : 'fill-transparent stroke-zinc-400 text-zinc-400 hover:stroke-yellow-300 hover:text-yellow-300'
-                    }`}
+            <div
+              className="p-6 flex justify-center gap-2 border-b border-white/10"
+              onMouseLeave={() => setHoveredRating(0)}
+            >
+              {[1, 2, 3, 4, 5].map((i) => {
+                const filled = i <= (hoveredRating || selectedRating)
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSelectedRating(i)}
+                    onMouseEnter={() => setHoveredRating(i)}
+                    aria-label={`Rate ${i} star${i > 1 ? 's' : ''}`}
+                    className="cursor-pointer transition-colors"
                   >
-                    <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-                  </svg>
-                </button>
-              ))}
+                    <Star
+                      className={`w-8 h-8 transition-colors ${
+                        filled
+                          ? 'fill-yellow-300 stroke-yellow-300'
+                          : 'fill-transparent stroke-zinc-400 hover:stroke-yellow-300'
+                      }`}
+                    />
+                  </button>
+                )
+              })}
             </div>
             <div className="flex flex-col">
               <button className="w-full py-4 px-6 flex items-center justify-center gap-2 text-zinc-300 hover:bg-white/5 hover:text-white transition-colors border-b border-white/10 font-medium">
