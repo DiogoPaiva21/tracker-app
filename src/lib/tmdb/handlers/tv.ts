@@ -67,7 +67,18 @@ interface TmdbTvImagesArray {
   vote_average: number
 }
 
-export interface TvDetailsWithSeason {
+export interface TvSeasonDetails {
+  selectedSeasonNumber: number
+  episodes: Array<{
+    episode_number: number
+    id: number
+    name: string
+    runtime: number | null
+    still_path: string | null
+  }>
+}
+
+export interface TvDetailsWithSeason extends TvSeasonDetails {
   id: number
   name: string
   overview: string
@@ -88,21 +99,44 @@ export interface TvDetailsWithSeason {
     name: string
     season_number: number
   }>
-  selectedSeasonNumber: number
-  episodes: Array<{
-    episode_number: number
-    id: number
-    name: string
-    runtime: number | null
-    still_path: string | null
-  }>
   cast: Array<TmdbTvCreditCast>
   crew: Array<TmdbTvCreditCrew>
 }
 
-const getFallbackSeasonNumber = (seasonNumbers: Array<number>) => {
+const getFallbackSeasonNumber = (
+  seasonNumbers: Array<number>,
+): number | null => {
   const firstNonSpecialSeason = seasonNumbers.find((season) => season > 0)
-  return firstNonSpecialSeason
+
+  if (typeof firstNonSpecialSeason === 'number') {
+    return firstNonSpecialSeason
+  }
+
+  return seasonNumbers.length > 0 ? seasonNumbers[0] : null
+}
+
+export const getTvSeasonDetails = async (
+  seriesId: string | number,
+  seasonNumber: number,
+): Promise<TvSeasonDetails> => {
+  const normalizedSeriesId = String(seriesId).trim()
+
+  if (!normalizedSeriesId) {
+    throw new Error('TV series id is required.')
+  }
+
+  if (!Number.isInteger(seasonNumber)) {
+    throw new Error('A valid season number is required.')
+  }
+
+  const seasonResponse = await tmdbRequest<TmdbTvSeasonResponse>(
+    `/tv/${encodeURIComponent(normalizedSeriesId)}/season/${seasonNumber}`,
+  )
+
+  return {
+    selectedSeasonNumber: seasonResponse.season_number,
+    episodes: seasonResponse.episodes,
+  }
 }
 
 export const getTvWithSeasonDetails = async (
@@ -122,10 +156,9 @@ export const getTvWithSeasonDetails = async (
   const nonSpecialSeasons = tvResponse.seasons.filter(
     (season) => season.season_number > 0,
   )
-  const availableSeasonNumbers =
-    nonSpecialSeasons.length > 0
-      ? nonSpecialSeasons.map((season) => season.season_number)
-      : tvResponse.seasons.map((season) => season.season_number)
+  const seasons =
+    nonSpecialSeasons.length > 0 ? nonSpecialSeasons : tvResponse.seasons
+  const availableSeasonNumbers = seasons.map((season) => season.season_number)
   const fallbackSeasonNumber = getFallbackSeasonNumber(availableSeasonNumbers)
   const normalizedSeasonNumber =
     typeof seasonNumber === 'number' &&
@@ -134,9 +167,13 @@ export const getTvWithSeasonDetails = async (
       ? seasonNumber
       : fallbackSeasonNumber
 
-  const seasonResponse = await tmdbRequest<TmdbTvSeasonResponse>(
-    `/tv/${encodeURIComponent(normalizedSeriesId)}/season/${normalizedSeasonNumber}`,
-  )
+  const seasonDetails =
+    normalizedSeasonNumber === null
+      ? {
+          selectedSeasonNumber: 0,
+          episodes: [],
+        }
+      : await getTvSeasonDetails(normalizedSeriesId, normalizedSeasonNumber)
 
   const logoPath =
     tvResponse.images.logos
@@ -153,9 +190,9 @@ export const getTvWithSeasonDetails = async (
     logo_path: logoPath,
     production_companies: tvResponse.production_companies,
     episode_run_time: tvResponse.episode_run_time,
-    seasons: nonSpecialSeasons,
-    selectedSeasonNumber: seasonResponse.season_number,
-    episodes: seasonResponse.episodes,
+    seasons,
+    selectedSeasonNumber: seasonDetails.selectedSeasonNumber,
+    episodes: seasonDetails.episodes,
     cast: tvResponse.aggregate_credits?.cast ?? [],
     crew: tvResponse.aggregate_credits?.crew ?? [],
   }

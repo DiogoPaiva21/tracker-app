@@ -45,7 +45,9 @@ const toLimitedList = (
   items: Array<HomeMediaItem | null>,
   limit: number = HOME_LIST_LIMIT,
 ) => {
-  return items.filter((item): item is HomeMediaItem => item !== null).slice(0, limit)
+  return items
+    .filter((item): item is HomeMediaItem => item !== null)
+    .slice(0, limit)
 }
 
 export const getHomePopularFeed = async (): Promise<HomePopularFeed> => {
@@ -60,12 +62,12 @@ export const getHomePopularFeed = async (): Promise<HomePopularFeed> => {
   }
 }
 
-export const getPopularMovies = async (): Promise<HomeMediaItem[]> => {
+export const getPopularMovies = async (): Promise<Array<HomeMediaItem>> => {
   const movieResponse = await tmdbGetPopular<TmdbMovieSummary>('movie')
   return toLimitedList(movieResponse.results.map(mapMovieToHomeItem))
 }
 
-export const getPopularShows = async (): Promise<HomeMediaItem[]> => {
+export const getPopularShows = async (): Promise<Array<HomeMediaItem>> => {
   const tvResponse = await tmdbGetPopular<TmdbTvSummary>('tv')
   return toLimitedList(tvResponse.results.map(mapTvToHomeItem))
 }

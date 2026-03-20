@@ -1,4 +1,5 @@
 import { tmdbRequest } from '../client'
+import { getMediaInfo } from '@/lib/mdblist'
 
 interface TmdbMovieCreditCast {
   id: number
@@ -74,6 +75,18 @@ export interface MovieDetails {
   }
 }
 
+export interface RatingsMDBList {
+  source: string
+  value: number | null
+  score: number | null
+  votes: number | null
+  url: string | null
+}
+
+export interface MovieMDBlist {
+  ratings: Array<RatingsMDBList>
+}
+
 export const getMovieWithCredits = async (
   movieId: string | number,
 ): Promise<MovieDetails> => {
@@ -87,11 +100,25 @@ export const getMovieWithCredits = async (
     `/movie/${encodeURIComponent(normalizedMovieId)}?append_to_response=credits,images`,
   )
 
+  const rating = await getMediaInfo<MovieMDBlist>(
+    'tmdb',
+    'movie',
+    normalizedMovieId,
+  )
+
   // Get logo path with highest vote_average and that the iso_639_1 is equal to "en"
   const logoPath =
     response.images.logos
       .filter((logo) => logo.iso_639_1 === 'en')
       .sort((a, b) => b.vote_average - a.vote_average)[0]?.file_path ?? null
+
+  // Get letterboxd rating from mdblist
+  const letterboxdRating =
+    rating.ratings.find((r) => r.source === 'letterboxd')?.value ?? null
+
+  // Get imdb rating from mdblist
+  const imdbRating =
+    rating.ratings.find((r) => r.source === 'imdb')?.value ?? null
 
   return {
     id: response.id,
@@ -108,8 +135,8 @@ export const getMovieWithCredits = async (
     cast: response.credits.cast,
     crew: response.credits.crew,
     ratings: {
-      imdb: null,
-      letterboxd: null,
+      imdb: imdbRating,
+      letterboxd: letterboxdRating,
     },
   }
 }

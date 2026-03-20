@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
 import { getPersonDetails } from '../lib/tmdb/handlers/person'
-import { TmdbPersonCredit } from '../lib/tmdb/types'
+import type { TmdbPersonCredit } from '../lib/tmdb/types'
 import {
   Select,
   SelectContent,
@@ -34,10 +34,10 @@ function PersonDetails() {
     : null
 
   // Group credits by department
-  const creditsByDepartment: Record<string, TmdbPersonCredit[]> = {}
+  const creditsByDepartment: Record<string, Array<TmdbPersonCredit>> = {}
 
   // Add Acting (Cast) department
-  if (person.combined_credits.cast && person.combined_credits.cast.length > 0) {
+  if (person.combined_credits.cast.length > 0) {
     creditsByDepartment['Acting'] = person.combined_credits.cast.map((c) => ({
       ...c,
       department: 'Acting',
@@ -46,23 +46,19 @@ function PersonDetails() {
   }
 
   // Add Crew departments
-  if (person.combined_credits.crew) {
-    person.combined_credits.crew.forEach((credit) => {
-      const department = credit.department || 'Crew'
-      if (!creditsByDepartment[department]) {
-        creditsByDepartment[department] = []
-      }
-      creditsByDepartment[department].push(credit)
-    })
-  }
+  person.combined_credits.crew.forEach((credit) => {
+    const department = credit.department ?? 'Crew'
+    creditsByDepartment[department] ??= []
+    creditsByDepartment[department].push(credit)
+  })
 
   // Sort each department by popularity (highest first)
   Object.keys(creditsByDepartment).forEach((department) => {
-    // Remove duplicates based on ID and Job/Character
+    // Remove duplicates based on title/show ID so each movie/show only appears once
     const uniqueCredits = Array.from(
       new Map(
         creditsByDepartment[department].map((c) => [
-          `${c.id}-${c.job || c.character || ''}`,
+          `${c.media_type}-${c.id}`,
           c,
         ]),
       ).values(),
@@ -135,7 +131,7 @@ function PersonDetails() {
       <main className="relative z-20 w-full max-w-7xl mx-auto pt-32 px-4 sm:px-6 md:px-8 grid grid-cols-1 md:grid-cols-12 gap-8">
         {/* Left Column - Profile Info */}
         <div className="md:col-span-4 lg:col-span-3 space-y-6">
-          <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10 aspect-2/3 max-w-[300px] mx-auto md:mx-0">
+          <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10 aspect-2/3 max-w-75 mx-auto md:mx-0">
             {profileUrl ? (
               <img
                 src={profileUrl}
@@ -259,86 +255,75 @@ function PersonDetails() {
 
           {departments.length > 0 && (
             <div className="space-y-6">
-              {selectedDepartment &&
-                creditsByDepartment[selectedDepartment] && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-                    {creditsByDepartment[selectedDepartment].map(
-                      (credit, idx) => {
-                        const title =
-                          credit.title ||
-                          credit.name ||
-                          credit.original_title ||
-                          credit.original_name
-                        const role = credit.character || credit.job
-                        const type = credit.media_type
-                        const posterUrl = credit.poster_path
-                          ? `${POSTER_BASE_URL}${credit.poster_path}`
-                          : null
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+                {creditsByDepartment[selectedDepartment].map((credit) => {
+                  const title =
+                    credit.title ||
+                    credit.name ||
+                    credit.original_title ||
+                    credit.original_name
+                  const type = credit.media_type
+                  const posterUrl = credit.poster_path
+                    ? `${POSTER_BASE_URL}${credit.poster_path}`
+                    : null
 
-                        return (
-                          <Link
-                            key={`${credit.id}-${role}-${idx}`}
-                            to={`/${type}/${credit.id}` as any}
-                            className="group flex flex-col bg-zinc-900/40 rounded-xl overflow-hidden border border-white/5 hover:border-white/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50"
-                          >
-                            <div className="aspect-2/3 w-full bg-zinc-800 relative overflow-hidden">
-                              {posterUrl ? (
-                                <img
-                                  src={posterUrl}
-                                  alt={title}
-                                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                  loading="lazy"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-zinc-500 bg-zinc-800/80">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="32"
-                                    height="32"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="1"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="mb-2 opacity-50"
-                                  >
-                                    <rect
-                                      x="2"
-                                      y="2"
-                                      width="20"
-                                      height="20"
-                                      rx="2.18"
-                                      ry="2.18"
-                                    ></rect>
-                                    <line x1="7" y1="2" x2="7" y2="22"></line>
-                                    <line x1="17" y1="2" x2="17" y2="22"></line>
-                                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                                    <line x1="2" y1="7" x2="7" y2="7"></line>
-                                    <line x1="2" y1="17" x2="7" y2="17"></line>
-                                    <line
-                                      x1="17"
-                                      y1="17"
-                                      x2="22"
-                                      y2="17"
-                                    ></line>
-                                    <line x1="17" y1="7" x2="22" y2="7"></line>
-                                  </svg>
-                                  <span className="text-xs font-medium px-2">
-                                    {title}
-                                  </span>
-                                </div>
-                              )}
-                              <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/70 backdrop-blur-md rounded text-[10px] font-bold uppercase tracking-wider text-white/90">
-                                {type}
-                              </div>
-                            </div>
-                          </Link>
-                        )
-                      },
-                    )}
-                  </div>
-                )}
+                  return (
+                    <Link
+                      key={`${type}-${credit.id}`}
+                      to={`/${type}/${credit.id}` as any}
+                      className="group flex flex-col bg-zinc-900/40 rounded-xl overflow-hidden border border-white/5 hover:border-white/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50"
+                    >
+                      <div className="aspect-2/3 w-full bg-zinc-800 relative overflow-hidden">
+                        {posterUrl ? (
+                          <img
+                            src={posterUrl}
+                            alt={title}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-zinc-500 bg-zinc-800/80">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="32"
+                              height="32"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mb-2 opacity-50"
+                            >
+                              <rect
+                                x="2"
+                                y="2"
+                                width="20"
+                                height="20"
+                                rx="2.18"
+                                ry="2.18"
+                              ></rect>
+                              <line x1="7" y1="2" x2="7" y2="22"></line>
+                              <line x1="17" y1="2" x2="17" y2="22"></line>
+                              <line x1="2" y1="12" x2="22" y2="12"></line>
+                              <line x1="2" y1="7" x2="7" y2="7"></line>
+                              <line x1="2" y1="17" x2="7" y2="17"></line>
+                              <line x1="17" y1="17" x2="22" y2="17"></line>
+                              <line x1="17" y1="7" x2="22" y2="7"></line>
+                            </svg>
+                            <span className="text-xs font-medium px-2">
+                              {title}
+                            </span>
+                          </div>
+                        )}
+                        <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/70 backdrop-blur-md rounded text-[10px] font-bold uppercase tracking-wider text-white/90">
+                          {type}
+                        </div>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
           )}
         </div>

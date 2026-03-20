@@ -104,14 +104,21 @@ function MovieDetails() {
             <p className="text-lg ml-1 text-zinc-300">{movie.runtime} mins</p>
 
             <div className="flex flex-wrap justify-center md:justify-start gap-3">
-              <div className="px-4 py-1.5 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium">
-                IMDb {formatRating(movie.ratings.imdb, 10)}
+              <div className="px-4  rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium flex items-center gap-2">
+                <img src="/imdb.svg" alt="IMDB" className="w-10 h-10" />
+                {formatRating(movie.ratings.imdb, 10)}
               </div>
-              <div className="px-4 py-1.5 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium">
-                TMDB {formatRating(movie.vote_average, 10)}
+              <div className="px-4  rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium flex items-center gap-2">
+                <img src="/tmdb.svg" alt="TMDB" className="w-8 h-8" />
+                {formatRating(movie.vote_average, 10)}
               </div>
-              <div className="px-4 py-1.5 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium">
-                LB {formatRating(movie.ratings.letterboxd, 5)}
+              <div className="px-4  rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium flex items-center gap-2">
+                <img
+                  src="/letterboxd.svg"
+                  alt="Letterboxd"
+                  className="w-7 h-7 rounded-full"
+                />
+                {formatRating(movie.ratings.letterboxd, 5)}
               </div>
             </div>
           </div>
