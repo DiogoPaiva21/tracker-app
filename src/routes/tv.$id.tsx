@@ -105,6 +105,9 @@ function TvDetails() {
   const LOGO_BASE_URL = `https://image.tmdb.org/t/p/w300`
   const STILL_BASE_URL = `https://image.tmdb.org/t/p/w300`
   const logoUrl = tv.logo_path ? `${LOGO_BASE_URL}${tv.logo_path}` : null
+  const logoAspectRatio = tv.logo_aspect_ratio ?? null
+  const shouldConstrainLogoByHeight =
+    logoAspectRatio !== null && logoAspectRatio < 2.5
   const backdropUrl = tv.backdrop_path
     ? `${IMAGE_BASE_URL}${tv.backdrop_path}`
     : ''
@@ -141,11 +144,17 @@ function TvDetails() {
           {/* Title & Info */}
           <div className="flex-1 space-y-6 text-center md:text-left z-30">
             {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt={tv.name}
-                className="max-w-40 md:max-w-50 lg:max-w-68 h-auto object-contain drop-shadow-2xl"
-              />
+              <div className="flex items-center">
+                <img
+                  src={logoUrl}
+                  alt={tv.name}
+                  className={
+                    shouldConstrainLogoByHeight
+                      ? 'w-auto max-h-16 md:max-h-20 lg:max-h-24 object-contain drop-shadow-2xl'
+                      : 'max-w-40 md:max-w-50 lg:max-w-68 h-auto object-contain drop-shadow-2xl'
+                  }
+                />
+              </div>
             ) : (
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
                 {tv.name}

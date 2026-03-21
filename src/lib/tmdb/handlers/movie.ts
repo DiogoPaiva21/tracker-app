@@ -63,6 +63,7 @@ export interface MovieDetails {
   backdrop_path: string | null
   poster_path: string | null
   logo_path: string | null
+  logo_aspect_ratio: number | null
   production_companies: Array<{
     id: number
     name: string
@@ -106,11 +107,14 @@ export const getMovieWithCredits = async (
     normalizedMovieId,
   )
 
-  // Get logo path with highest vote_average and that the iso_639_1 is equal to "en"
-  const logoPath =
-    response.images.logos
-      .filter((logo) => logo.iso_639_1 === 'en')
-      .sort((a, b) => b.vote_average - a.vote_average)[0]?.file_path ?? null
+  // Get logo with highest vote_average and that the iso_639_1 is equal to "en"
+  const sortedLogos = [...response.images.logos].sort(
+    (a, b) => b.vote_average - a.vote_average,
+  )
+  const englishLogos = sortedLogos.filter((logo) => logo.iso_639_1 === 'en')
+
+  const selectedLogo =
+    englishLogos.length > 0 ? englishLogos[0] : (sortedLogos[0] ?? null)
 
   // Get letterboxd rating from mdblist
   const letterboxdRating =
@@ -130,7 +134,8 @@ export const getMovieWithCredits = async (
     release_date: response.release_date,
     backdrop_path: response.backdrop_path,
     poster_path: response.poster_path,
-    logo_path: logoPath,
+    logo_path: selectedLogo?.file_path ?? null,
+    logo_aspect_ratio: selectedLogo?.aspect_ratio ?? null,
     production_companies: response.production_companies,
     cast: response.credits.cast,
     crew: response.credits.crew,

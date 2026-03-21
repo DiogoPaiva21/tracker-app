@@ -33,6 +33,9 @@ function MovieDetails() {
   const LOGO_BASE_URL = `https://image.tmdb.org/t/p/w300`
   const POSTER_BASE_URL = `https://image.tmdb.org/t/p/w342`
   const logoUrl = movie.logo_path ? `${LOGO_BASE_URL}${movie.logo_path}` : null
+  const logoAspectRatio = movie.logo_aspect_ratio ?? null
+  const shouldConstrainLogoByHeight =
+    logoAspectRatio !== null && logoAspectRatio < 2.5
   const backdropUrl = movie.backdrop_path
     ? `${IMAGE_BASE_URL}${movie.backdrop_path}`
     : null
@@ -81,11 +84,17 @@ function MovieDetails() {
           <div className="flex-1 space-y-4 text-center md:text-left z-30">
             <div className="flex flex-row items-baseline">
               {logoUrl ? (
-                <img
-                  src={logoUrl}
-                  alt={movie.title}
-                  className="max-w-40 md:max-w-50 lg:max-w-68 h-auto object-contain drop-shadow-2xl"
-                />
+                <div className="flex items-center">
+                  <img
+                    src={logoUrl}
+                    alt={movie.title}
+                    className={
+                      shouldConstrainLogoByHeight
+                        ? 'w-auto max-h-16 md:max-h-20 lg:max-h-36 object-contain drop-shadow-2xl'
+                        : 'max-w-40 md:max-w-50 lg:max-w-68 h-auto object-contain drop-shadow-2xl'
+                    }
+                  />
+                </div>
               ) : (
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
                   {movie.title}

@@ -86,6 +86,7 @@ export interface TvDetailsWithSeason extends TvSeasonDetails {
   backdrop_path: string | null
   poster_path: string | null
   logo_path: string | null
+  logo_aspect_ratio: number | null
   production_companies: Array<{
     id: number
     name: string
@@ -175,10 +176,13 @@ export const getTvWithSeasonDetails = async (
         }
       : await getTvSeasonDetails(normalizedSeriesId, normalizedSeasonNumber)
 
-  const logoPath =
-    tvResponse.images.logos
-      .filter((logo) => logo.iso_639_1 === 'en')
-      .sort((a, b) => b.vote_average - a.vote_average)[0]?.file_path ?? null
+  const sortedLogos = [...tvResponse.images.logos].sort(
+    (a, b) => b.vote_average - a.vote_average,
+  )
+  const englishLogos = sortedLogos.filter((logo) => logo.iso_639_1 === 'en')
+
+  const selectedLogo =
+    englishLogos.length > 0 ? englishLogos[0] : (sortedLogos[0] ?? null)
 
   return {
     id: tvResponse.id,
@@ -187,7 +191,8 @@ export const getTvWithSeasonDetails = async (
     first_air_date: tvResponse.first_air_date,
     backdrop_path: tvResponse.backdrop_path,
     poster_path: tvResponse.poster_path,
-    logo_path: logoPath,
+    logo_path: selectedLogo?.file_path ?? null,
+    logo_aspect_ratio: selectedLogo?.aspect_ratio ?? null,
     production_companies: tvResponse.production_companies,
     episode_run_time: tvResponse.episode_run_time,
     seasons,
