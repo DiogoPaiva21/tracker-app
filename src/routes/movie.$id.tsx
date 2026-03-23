@@ -1,14 +1,15 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
-import { Calendar, ListPlus, PenTool, Plus, Star } from 'lucide-react'
-import { CastModal } from '../components/CastModal'
-import { CrewModal } from '../components/CrewModal'
-import { ReviewModal } from '../components/ReviewModal'
+import { CastModal } from '../components/modals/CastModal'
+import { CrewModal } from '../components/modals/CrewModal'
+import { ReviewModal } from '../components/modals/ReviewModal'
 import { getMovieWithCredits } from '../lib/tmdb/handlers/movie'
-import { CastSection } from '@/components/cast-section'
-import { CrewSection } from '@/components/crew-section'
+import { CastSection } from '@/components/sections/cast-section'
+import { CrewSection } from '@/components/sections/crew-section'
 import { sortCrew } from '@/lib/movies/mutils'
+import { ActionsSection } from '@/components/sections/actions-section'
+import { InfoSection } from '@/components/sections/info-section'
 
 const getMovieById = createServerFn({ method: 'GET' })
   .inputValidator((data: { id: string }) => data)
@@ -160,79 +161,19 @@ function MovieDetails() {
         {/* Right Column */}
         <div className="lg:col-span-4 space-y-6">
           {/* Action Card */}
-          <div className="bg-zinc-900/80 border border-white/10 rounded-2xl overflow-hidden">
-            <div
-              className="p-6 flex justify-center gap-2 border-b border-white/10"
-              onMouseLeave={() => setHoveredRating(0)}
-            >
-              {[1, 2, 3, 4, 5].map((i) => {
-                const filled = i <= (hoveredRating || selectedRating)
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setSelectedRating(i)}
-                    onMouseEnter={() => setHoveredRating(i)}
-                    aria-label={`Rate ${i} star${i > 1 ? 's' : ''}`}
-                    className="cursor-pointer transition-colors"
-                  >
-                    <Star
-                      className={`w-8 h-8 transition-colors ${
-                        filled
-                          ? 'fill-yellow-300 stroke-yellow-300'
-                          : 'fill-transparent stroke-zinc-400 hover:stroke-yellow-300'
-                      }`}
-                    />
-                  </button>
-                )
-              })}
-            </div>
-            <div className="flex flex-col">
-              <button className="w-full py-4 px-6 flex items-center justify-center gap-2 text-zinc-300 hover:bg-white/5 hover:text-white transition-colors border-b border-white/10 font-medium">
-                <Plus className="w-5 h-5" />
-                Add to Watchlist
-              </button>
-              <button
-                onClick={() => setIsReviewModalOpen(true)}
-                className="w-full py-4 px-6 flex items-center justify-center gap-2 text-zinc-300 hover:bg-white/5 hover:text-white transition-colors border-b border-white/10 font-medium cursor-pointer"
-              >
-                <PenTool className="w-5 h-5" />
-                Review or Log
-              </button>
-              <button className="w-full py-4 px-6 flex items-center justify-center gap-2 text-zinc-300 hover:bg-white/5 hover:text-white transition-colors font-medium">
-                <ListPlus className="w-5 h-5" />
-                Add to List
-              </button>
-            </div>
-          </div>
+          <ActionsSection
+            setIsReviewModalOpen={setIsReviewModalOpen}
+            setSelectedRating={setSelectedRating}
+            hoveredRating={hoveredRating}
+            selectedRating={selectedRating}
+            setHoveredRating={setHoveredRating}
+          />
 
           {/* Info Card */}
-          <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-6 space-y-6">
-            <div>
-              <div className="flex items-center gap-2 text-zinc-400 mb-1">
-                <span>Release:</span>
-                <Calendar className="w-4 h-4" />
-              </div>
-              <div className="text-white font-medium">
-                {new Date(movie.release_date).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-zinc-400 mb-2">Studios:</div>
-              <div className="flex flex-col gap-1">
-                {movie.production_companies.map((company) => (
-                  <span key={company.id} className="text-white font-medium">
-                    {company.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
+          <InfoSection
+            release_date={movie.release_date}
+            production_companies={movie.production_companies}
+          />
         </div>
       </main>
 

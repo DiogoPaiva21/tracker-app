@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { Users } from 'lucide-react'
-import { Carousel, CarouselContent, CarouselItem } from './ui/carousel'
+import { Carousel, CarouselContent, CarouselItem } from '../ui/carousel'
 
 interface CastMember {
   id: number
@@ -31,7 +31,7 @@ export function CastSection({ cast, setIsCastModalOpen }: CastSectionProps) {
             {cast.slice(0, 15).map((person) => (
               <CarouselItem
                 key={person.id}
-                className="pl-6 basis-[110px] sm:basis-[120px] md:basis-[130px]"
+                className="pl-6 basis-27.5 sm:basis-30 md:basis-32.5"
               >
                 <Link to={`/person/${person.id}` as any} className="block">
                   <div className="flex flex-col items-center gap-3">

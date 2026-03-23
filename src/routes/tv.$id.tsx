@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { useRef, useState } from 'react'
-import { Calendar, ChevronDown, ListPlus, PenTool, Plus } from 'lucide-react'
-import { CastModal } from '../components/CastModal'
-import { ReviewModal } from '../components/ReviewModal'
+import { ChevronDown, Plus } from 'lucide-react'
+import { CastModal } from '../components/modals/CastModal'
+import { ReviewModal } from '../components/modals/ReviewModal'
 import {
   Carousel,
   CarouselContent,
@@ -14,7 +14,9 @@ import {
   getTvWithSeasonDetails,
 } from '../lib/tmdb/handlers/tv'
 import type { ChangeEvent } from 'react'
-import { CastSection } from '@/components/cast-section'
+import { CastSection } from '@/components/sections/cast-section'
+import { InfoSection } from '@/components/sections/info-section'
+import { ActionsSection } from '@/components/sections/actions-section'
 
 const getTvByIdAndSeason = createServerFn({ method: 'GET' })
   .inputValidator((data: { id: string; seasonNumber?: number }) => data)
@@ -36,13 +38,14 @@ function TvDetails() {
   const tv = Route.useLoaderData()
   const { id } = Route.useParams()
   const [selectedRating, setSelectedRating] = useState(0)
+  const [hoveredRating, setHoveredRating] = useState(0)
   const [isCastModalOpen, setIsCastModalOpen] = useState(false)
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
   const [selectedSeason, setSelectedSeason] = useState(tv.selectedSeasonNumber)
   const [seasonEpisodesCache, setSeasonEpisodesCache] = useState<
     Partial<Record<number, typeof tv.episodes>>
   >({ [tv.selectedSeasonNumber]: tv.episodes })
-  const [isSeasonLoading, setIsSeasonLoading] = useState(false)
+
   const latestSeasonRequestRef = useRef(0)
   const lastEpisodesRef = useRef<typeof tv.episodes>(tv.episodes)
 
@@ -62,20 +65,16 @@ function TvDetails() {
     setSelectedSeason(seasonNumber)
 
     if (seasonNumber === tv.selectedSeasonNumber) {
-      setIsSeasonLoading(false)
       return
     }
 
     const cachedEpisodes = seasonEpisodesCache[seasonNumber]
 
     if (cachedEpisodes) {
-      setIsSeasonLoading(false)
       return
     }
 
     const requestId = ++latestSeasonRequestRef.current
-    setIsSeasonLoading(true)
-
     try {
       const response = await getTvSeasonById({
         data: { id, seasonNumber },
@@ -94,10 +93,6 @@ function TvDetails() {
         ...prev,
         [seasonNumber]: [],
       }))
-    } finally {
-      if (latestSeasonRequestRef.current === requestId) {
-        setIsSeasonLoading(false)
-      }
     }
   }
 
@@ -287,76 +282,19 @@ function TvDetails() {
         {/* Right Column */}
         <div className="lg:col-span-4 space-y-6">
           {/* Action Card */}
-          <div className="bg-zinc-900/80 border border-white/10 rounded-2xl overflow-hidden">
-            <div className="p-6 flex justify-center gap-2 border-b border-white/10">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setSelectedRating(i)}
-                  aria-label={`Rate ${i} star${i > 1 ? 's' : ''}`}
-                  className="cursor-pointer transition-colors"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    className={`w-8 h-8 transition-colors ${
-                      i <= selectedRating
-                        ? 'fill-yellow-400 stroke-yellow-300 text-yellow-300'
-                        : 'fill-transparent stroke-zinc-400 text-zinc-400 hover:stroke-yellow-300 hover:text-yellow-300'
-                    }`}
-                  >
-                    <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-                  </svg>
-                </button>
-              ))}
-            </div>
-            <div className="flex flex-col">
-              <button className="w-full py-4 px-6 flex items-center justify-center gap-2 text-zinc-300 hover:bg-white/5 hover:text-white transition-colors border-b border-white/10 font-medium">
-                <Plus className="w-5 h-5" />
-                Add to Watchlist
-              </button>
-              <button
-                onClick={() => setIsReviewModalOpen(true)}
-                className="w-full py-4 px-6 flex items-center justify-center gap-2 text-zinc-300 hover:bg-white/5 hover:text-white transition-colors border-b border-white/10 font-medium cursor-pointer"
-              >
-                <PenTool className="w-5 h-5" />
-                Review or Log
-              </button>
-              <button className="w-full py-4 px-6 flex items-center justify-center gap-2 text-zinc-300 hover:bg-white/5 hover:text-white transition-colors font-medium">
-                <ListPlus className="w-5 h-5" />
-                Add to List
-              </button>
-            </div>
-          </div>
+          <ActionsSection
+            setIsReviewModalOpen={setIsReviewModalOpen}
+            setSelectedRating={setSelectedRating}
+            hoveredRating={hoveredRating}
+            selectedRating={selectedRating}
+            setHoveredRating={setHoveredRating}
+          />
 
           {/* Info Card */}
-          <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-6 space-y-6">
-            <div>
-              <div className="flex items-center gap-2 text-zinc-400 mb-1">
-                <span>First Aired:</span>
-                <Calendar className="w-4 h-4" />
-              </div>
-              <div className="text-white font-medium">
-                {new Date(tv.first_air_date).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-zinc-400 mb-2">Studios:</div>
-              <div className="flex flex-col gap-1">
-                {tv.production_companies.map((company) => (
-                  <span key={company.id} className="text-white font-medium">
-                    {company.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
+          <InfoSection
+            release_date={tv.first_air_date}
+            production_companies={tv.production_companies}
+          />
         </div>
       </main>
 
