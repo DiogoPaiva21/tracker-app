@@ -1,169 +1,119 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
-import { Activity, ArrowRight, Flame, Users } from 'lucide-react'
-import { FriendRating } from '@/components/friend-rating'
-import { MediaCard } from '@/components/media-card'
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from '@/components/ui/carousel'
-import { getHomePopularFeed } from '@/lib/tmdb/handlers/home'
-
-const getHomePopularData = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    return getHomePopularFeed()
-  },
-)
+import { CurrentlyWatching } from '@/components/shows/currently-watching'
+import { Watchlist } from '@/components/movies/watchlist'
+import { NextEpisodes } from '@/components/homepage/next-episodes'
+import { RecentActivity } from '@/components/homepage/recent-activity'
 
 export const Route = createFileRoute('/')({
-  loader: async () => getHomePopularData(),
   component: App,
 })
 
-const FRIEND_RATINGS = [
+const CURRENTLY_WATCHING = [
   {
-    id: 'r1',
-    user: { name: 'Alex Chen', avatar: 'https://i.pravatar.cc/150?u=alex' },
-    media: {
-      title: 'Dune: Part Two',
-      year: 2024,
-      image:
-        'https://image.tmdb.org/t/p/w600_and_h900_bestv2/1pdfLvkbY9ohJlCjQH2IGpd3bZA.jpg',
-    },
-    rating: 10,
-    review:
-      'A masterpiece of modern cinema. Denis Villeneuve has created something truly awe-inspiring. The sound design alone is worth the price of admission.',
-    timeAgo: '2 hours ago',
+    id: 'cw1',
+    name: 'Shōgun',
+    episode: 'S1 E3 · Tomorrow is Tomorrow',
+    progress: 45,
+    image:
+      'https://image.tmdb.org/t/p/original/7mkUu1F2hVUNgz24xO8HPx0D6mK.jpg',
   },
   {
-    id: 'r2',
-    user: { name: 'Sarah Miller', avatar: 'https://i.pravatar.cc/150?u=sarah' },
-    media: {
-      title: 'Shōgun',
-      year: 2024,
-      image:
-        'https://image.tmdb.org/t/p/w600_and_h900_bestv2/7O4iVfOMQmdCSZ0zBOMHn02HkU5.jpg',
-    },
-    rating: 9,
-    review:
-      'Incredible attention to detail. Every frame looks like a painting. Cosmo Jarvis and Hiroyuki Sanada are phenomenal.',
-    timeAgo: '5 hours ago',
+    id: 'cw2',
+    name: '3 Body Problem',
+    episode: 'S1 E1 · Countdown',
+    progress: 10,
+    image:
+      'https://image.tmdb.org/t/p/original/6iNWfGVCEfASDdlNb05TP5nG0ll.jpg',
   },
   {
-    id: 'r3',
-    user: { name: 'David Kim', avatar: 'https://i.pravatar.cc/150?u=david' },
-    media: {
-      title: 'Poor Things',
-      year: 2023,
-      image:
-        'https://image.tmdb.org/t/p/w600_and_h900_bestv2/kCGlIMHnOm8JPXq3rXM6c5wMxcT.jpg',
-    },
-    rating: 8,
-    review:
-      'Wildly inventive and utterly bizarre in the best way possible. Emma Stone gives the performance of a lifetime.',
-    timeAgo: '1 day ago',
+    id: 'cw3',
+    name: 'Fallout',
+    episode: 'S1 E8 · The Beginning',
+    progress: 80,
+    image:
+      'https://image.tmdb.org/t/p/original/8zbAoryWbtH0DKdev8abFAjdufy.jpg',
+  },
+  {
+    id: 'cw4',
+    name: 'Dune: Part Two',
+    episode: 'Part Two',
+    progress: 15,
+    image:
+      'https://image.tmdb.org/t/p/original/7mkUu1F2hVUNgz24xO8HPx0D6mK.jpg',
+  },
+]
+
+const MOVIE_WATCHLIST = [
+  {
+    id: 'mw1',
+    name: 'Dune: Part Two',
+    image:
+      'https://image.tmdb.org/t/p/original/7mkUu1F2hVUNgz24xO8HPx0D6mK.jpg',
+  },
+  {
+    id: 'mw2',
+    name: 'Poor Things',
+    image:
+      'https://image.tmdb.org/t/p/original/7HKpc11uQfxnw0Y8tRUYn1fsKqE.jpg',
+  },
+  {
+    id: 'mw3',
+    name: 'Civil War',
+    image:
+      'https://image.tmdb.org/t/p/w600_and_h900_bestv2/sh7Rg8Er3tFcN9BpKIPOMvALgZd.jpg',
+  },
+  {
+    id: 'mw4',
+    name: 'Challengers',
+    image:
+      'https://image.tmdb.org/t/p/w600_and_h900_bestv2/H6vke7zGiuLsz4v4RPeReb9rsv.jpg',
+  },
+]
+
+const NEXT_EPISODES = [
+  {
+    id: 'ne1',
+    show: "X-Men '97",
+    episode: 'S1 E5 · Remember It',
+    date: 'Today',
+    image:
+      'https://image.tmdb.org/t/p/original/k8yARbD9iYn2nRX2HvsopfKDN2r.jpg',
+  },
+  {
+    id: 'ne2',
+    show: 'Tokyo Vice',
+    episode: 'S2 E10 · Endgame',
+    date: 'Tomorrow',
+    image:
+      'https://image.tmdb.org/t/p/original/6iNWfGVCEfASDdlNb05TP5nG0ll.jpg',
+  },
+  {
+    id: 'ne3',
+    show: 'Invincible',
+    episode: 'S2 E8 · I Thought You Were Stronger',
+    date: 'In 2 days',
+    image:
+      'https://image.tmdb.org/t/p/original/8zbAoryWbtH0DKdev8abFAjdufy.jpg',
   },
 ]
 
 function App() {
-  const { popularMovies, popularShows } = Route.useLoaderData()
-
   return (
-    <div className="w-full max-w-7xl mx-auto px-2 space-y-24">
-      {/* Hero Header */}
-      <section className="relative pt-6 pb-6">
-        <div className="absolute top-0 right-0 -z-10 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] opacity-50 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 -z-10 w-[400px] h-[400px] bg-blue-600/20 rounded-full blur-[100px] opacity-40 pointer-events-none" />
-      </section>
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-12 pt-28">
+      {/* Currently Watching */}
+      <CurrentlyWatching currentlyWatching={CURRENTLY_WATCHING} />
 
-      {/* Popular Movies Section */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg text-primary">
-              <Flame className="w-5 h-5" />
-            </div>
-            <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
-              Popular Movies
-            </h2>
-          </div>
-          <button className="flex items-center gap-1 text-sm font-medium text-zinc-400 hover:text-white transition-colors group">
-            See all
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </button>
-        </div>
+      {/* Movie Watchlist */}
+      <Watchlist watchlist={MOVIE_WATCHLIST} />
 
-        {/* Horizontal Scroll Area */}
-        <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
-          <Carousel
-            opts={{ align: 'start', dragFree: true }}
-            className="w-full pb-8"
-          >
-            <CarouselContent className="-ml-4">
-              {popularMovies.map((movie) => (
-                <CarouselItem key={movie.id} className="basis-auto pl-4">
-                  <MediaCard {...movie} />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
-      </section>
+      {/* Bottom Section: New Episodes & Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:items-stretch">
+        {/* Next Episodes */}
+        <NextEpisodes nextEpisodes={NEXT_EPISODES} />
 
-      {/* Friends Activity Section */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
-              <Users className="w-5 h-5" />
-            </div>
-            <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
-              Friends' Activity
-            </h2>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {FRIEND_RATINGS.map((rating) => (
-            <FriendRating key={rating.id} {...rating} />
-          ))}
-        </div>
-      </section>
-
-      {/* Popular Shows Section */}
-      <section className="space-y-6 pb-20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
-              <Activity className="w-5 h-5" />
-            </div>
-            <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
-              Popular TV Shows
-            </h2>
-          </div>
-          <button className="flex items-center gap-1 text-sm font-medium text-zinc-400 hover:text-white transition-colors group">
-            See all
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </button>
-        </div>
-
-        <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
-          <Carousel
-            opts={{ align: 'start', dragFree: true }}
-            className="w-full pb-8"
-          >
-            <CarouselContent className="-ml-4">
-              {popularShows.map((show) => (
-                <CarouselItem key={show.id} className="basis-auto pl-4">
-                  <MediaCard {...show} />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-          <div className="absolute top-0 right-0 bottom-8 w-24 bg-linear-to-l from-black to-transparent pointer-events-none hidden md:block" />
-        </div>
-      </section>
+        {/* Recent Activity */}
+        <RecentActivity />
+      </div>
     </div>
   )
 }

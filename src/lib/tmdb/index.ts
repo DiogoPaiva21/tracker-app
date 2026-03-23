@@ -1,3 +1,7 @@
 export * from './client'
 export * from './handlers/home'
+export * from './handlers/search'
+export * from './handlers/movie'
+export * from './handlers/tv'
+export * from './handlers/person'
 export * from './types'
