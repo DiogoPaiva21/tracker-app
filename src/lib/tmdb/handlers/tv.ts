@@ -1,4 +1,5 @@
 import { tmdbRequest } from '../client'
+import { getMediaInfo } from '@/lib/mdblist'
 
 interface TmdbTvCreditCast {
   id: number
@@ -18,6 +19,7 @@ interface TmdbTvDetailsResponse {
   id: number
   name: string
   overview: string
+  vote_average: number | null
   first_air_date: string
   backdrop_path: string | null
   poster_path: string | null
@@ -82,6 +84,7 @@ export interface TvDetailsWithSeason extends TvSeasonDetails {
   id: number
   name: string
   overview: string
+  vote_average: number | null
   first_air_date: string
   backdrop_path: string | null
   poster_path: string | null
@@ -102,6 +105,22 @@ export interface TvDetailsWithSeason extends TvSeasonDetails {
   }>
   cast: Array<TmdbTvCreditCast>
   crew: Array<TmdbTvCreditCrew>
+  ratings: {
+    imdb: number | null
+    tomatoes: number | null
+  }
+}
+
+export interface RatingsMDBList {
+  source: string
+  value: number | null
+  score: number | null
+  votes: number | null
+  url: string | null
+}
+
+export interface ShowMDBlist {
+  ratings: Array<RatingsMDBList>
 }
 
 const getFallbackSeasonNumber = (
@@ -176,6 +195,19 @@ export const getTvWithSeasonDetails = async (
         }
       : await getTvSeasonDetails(normalizedSeriesId, normalizedSeasonNumber)
 
+  const rating = await getMediaInfo<ShowMDBlist>(
+    'tmdb',
+    'show',
+    tvResponse.id.toString(),
+  )
+
+  // Get imdb rating from mdblist
+  const imdbRating =
+    rating.ratings.find((r) => r.source === 'imdb')?.value ?? null
+
+  const tomatoesRating =
+    rating.ratings.find((r) => r.source === 'tomatoes')?.value ?? null
+
   const sortedLogos = [...tvResponse.images.logos].sort(
     (a, b) => b.vote_average - a.vote_average,
   )
@@ -188,11 +220,12 @@ export const getTvWithSeasonDetails = async (
     id: tvResponse.id,
     name: tvResponse.name,
     overview: tvResponse.overview,
+    vote_average: tvResponse.vote_average,
     first_air_date: tvResponse.first_air_date,
     backdrop_path: tvResponse.backdrop_path,
     poster_path: tvResponse.poster_path,
-    logo_path: selectedLogo?.file_path ?? null,
-    logo_aspect_ratio: selectedLogo?.aspect_ratio ?? null,
+    logo_path: selectedLogo.file_path,
+    logo_aspect_ratio: selectedLogo.aspect_ratio,
     production_companies: tvResponse.production_companies,
     episode_run_time: tvResponse.episode_run_time,
     seasons,
@@ -200,5 +233,9 @@ export const getTvWithSeasonDetails = async (
     episodes: seasonDetails.episodes,
     cast: tvResponse.aggregate_credits?.cast ?? [],
     crew: tvResponse.aggregate_credits?.crew ?? [],
+    ratings: {
+      imdb: imdbRating,
+      tomatoes: tomatoesRating,
+    },
   }
 }

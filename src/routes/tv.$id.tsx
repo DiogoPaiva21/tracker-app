@@ -112,7 +112,14 @@ function TvDetails() {
     ? `${IMAGE_BASE_URL}${tv.backdrop_path}`
     : ''
   const posterUrl = tv.poster_path ? `${IMAGE_BASE_URL}${tv.poster_path}` : ''
-
+  const formatRating = (
+    rating: number | null,
+    max: number,
+    precision: number = 1,
+  ) => {
+    if (rating === null) return 'N/A'
+    return `${rating.toFixed(precision)}/${max}`
+  }
   return (
     <div className="relative min-h-screen text-white selection:bg-primary/30 font-sans pb-24 bg-[#09090b]">
       {/* Full Page Backdrop */}
@@ -162,14 +169,21 @@ function TvDetails() {
             )}
 
             <div className="flex flex-wrap justify-center md:justify-start gap-3">
-              <div className="px-4 py-1.5 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium">
-                IMDb 9.5
+              <div className="px-4  rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium flex items-center gap-2">
+                <img src="/imdb.svg" alt="IMDB" className="w-10 h-10" />
+                {formatRating(tv.ratings.imdb, 10)}
               </div>
-              <div className="px-4 py-1.5 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium">
-                RT 96%
+              <div className="px-4  rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium flex items-center gap-2">
+                <img src="/tmdb.svg" alt="TMDB" className="w-8 h-8" />
+                {formatRating(tv.vote_average, 10)}
               </div>
-              <div className="px-4 py-1.5 rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium">
-                LB 4.8
+              <div className="px-4  rounded-md border border-white/20 bg-black/40 backdrop-blur-sm text-sm font-medium flex items-center gap-2">
+                <img
+                  src="/tomatoes.svg"
+                  alt="Rotten Tomatoes"
+                  className="w-7 h-7 rounded-full"
+                />
+                {formatRating(tv.ratings.tomatoes, 100, 0)}
               </div>
             </div>
           </div>
