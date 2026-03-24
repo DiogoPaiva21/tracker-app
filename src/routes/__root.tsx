@@ -41,6 +41,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <NavBar />
+        {/*
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <div className="absolute inset-0 bg-[#09090b]/30 z-10" />
+          <div className="absolute inset-0 bg-linear-to-t from-[#09090b]/80 via-[#09090b]/40 to-transparent z-10" />
+          <img
+            src="https://image.tmdb.org/t/p/original/7mkUu1F2hVUNgz24xO8HPx0D6mK.jpg"
+            className="w-full h-full object-cover object-center mix-blend-screen opacity-50"
+          />
+          </div>*/}
         <main className="min-h-screen pb-16">{children}</main>
         <TanStackDevtools
           config={{
