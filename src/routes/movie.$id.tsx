@@ -149,12 +149,18 @@ function MovieDetails() {
           <CastSection
             cast={movie.cast}
             setIsCastModalOpen={setIsCastModalOpen}
+            posterPath={movie.poster_path}
+            backdropPath={movie.backdrop_path}
+            profilePaths={movie.cast.map((person) => person.profile_path)}
           />
 
           {/* Crew */}
           <CrewSection
             crew={visibleCrew}
             setIsCrewModalOpen={setIsCrewModalOpen}
+            posterPath={movie.poster_path}
+            backdropPath={movie.backdrop_path}
+            profilePaths={orderedCrew.map((person) => person.profile_path)}
           />
         </div>
 
@@ -167,6 +173,8 @@ function MovieDetails() {
             hoveredRating={hoveredRating}
             selectedRating={selectedRating}
             setHoveredRating={setHoveredRating}
+            posterPath={movie.poster_path}
+            backdropPath={movie.backdrop_path}
           />
 
           {/* Info Card */}

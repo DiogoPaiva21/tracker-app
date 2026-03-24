@@ -111,7 +111,7 @@ export interface TvDetailsWithSeason extends TvSeasonDetails {
   }
 }
 
-export interface RatingsMDBList {
+interface RatingsMDBList {
   source: string
   value: number | null
   score: number | null

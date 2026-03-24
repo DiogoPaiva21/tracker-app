@@ -1,4 +1,5 @@
 import { ListPlus, PenTool, Plus, Star } from 'lucide-react'
+import { preloadTmdbImages } from '@/lib/tmdb/images'
 
 interface ActionsSectionProps {
   setIsReviewModalOpen: (value: boolean) => void
@@ -6,6 +7,8 @@ interface ActionsSectionProps {
   hoveredRating: number
   selectedRating: number
   setHoveredRating: (value: number) => void
+  posterPath?: string | null
+  backdropPath?: string | null
 }
 
 export function ActionsSection({
@@ -14,7 +17,15 @@ export function ActionsSection({
   hoveredRating,
   selectedRating,
   setHoveredRating,
+  posterPath,
+  backdropPath,
 }: ActionsSectionProps) {
+  const preloadReviewImages = () => {
+    preloadTmdbImages({
+      posterPath,
+      backdropPath,
+    })
+  }
   return (
     <div className="bg-zinc-900/80 border border-white/10 rounded-2xl overflow-hidden">
       <div
@@ -50,6 +61,8 @@ export function ActionsSection({
         </button>
         <button
           onClick={() => setIsReviewModalOpen(true)}
+          onMouseEnter={preloadReviewImages}
+          onFocus={preloadReviewImages}
           className="w-full py-4 px-6 flex items-center justify-center gap-2 text-zinc-300 hover:bg-white/5 hover:text-white transition-colors border-b border-white/10 font-medium cursor-pointer"
         >
           <PenTool className="w-5 h-5" />

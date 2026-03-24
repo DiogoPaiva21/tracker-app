@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Users } from 'lucide-react'
 import { Carousel, CarouselContent, CarouselItem } from '../ui/carousel'
+import { preloadTmdbImages } from '@/lib/tmdb/images'
 
 interface CastMember {
   id: number
@@ -11,15 +12,35 @@ interface CastMember {
 interface CastSectionProps {
   cast: Array<CastMember>
   setIsCastModalOpen: (isOpen: boolean) => void
+  posterPath?: string | null
+  backdropPath?: string | null
+  profilePaths?: Array<string | null | undefined>
 }
 
-export function CastSection({ cast, setIsCastModalOpen }: CastSectionProps) {
+export function CastSection({
+  cast,
+  setIsCastModalOpen,
+  posterPath,
+  backdropPath,
+  profilePaths,
+}: CastSectionProps) {
+  const preloadCastModalImages = () => {
+    preloadTmdbImages({
+      posterPath,
+      backdropPath,
+      profilePaths:
+        profilePaths ?? cast.slice(0, 15).map((person) => person.profile_path),
+    })
+  }
+
   return (
     <section className="bg-zinc-900/50 border border-white/10 rounded-2xl p-6 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold text-white">Cast</h2>
         <button
           onClick={() => setIsCastModalOpen(true)}
+          onMouseEnter={preloadCastModalImages}
+          onFocus={preloadCastModalImages}
           className="text-sm text-zinc-400 hover:text-white transition-colors"
         >
           See all

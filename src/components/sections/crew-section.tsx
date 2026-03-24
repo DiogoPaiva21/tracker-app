@@ -1,3 +1,5 @@
+import { preloadTmdbImages } from '@/lib/tmdb/images'
+
 interface CrewMember {
   id: number
   name: string
@@ -6,17 +8,36 @@ interface CrewMember {
 }
 
 interface CrewSectionProps {
-  crew: CrewMember[]
+  crew: Array<CrewMember>
   setIsCrewModalOpen: (isOpen: boolean) => void
+  posterPath?: string | null
+  backdropPath?: string | null
+  profilePaths?: Array<string | null | undefined>
 }
 
-export function CrewSection({ crew, setIsCrewModalOpen }: CrewSectionProps) {
+export function CrewSection({
+  crew,
+  setIsCrewModalOpen,
+  posterPath,
+  backdropPath,
+  profilePaths,
+}: CrewSectionProps) {
+  const preloadCrewModalImages = () => {
+    preloadTmdbImages({
+      posterPath,
+      backdropPath,
+      profilePaths: profilePaths ?? crew.map((person) => person.profile_path),
+    })
+  }
+
   return (
     <section className="bg-zinc-900/50 border border-white/10 rounded-2xl p-6 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold text-white">Crew</h2>
         <button
           onClick={() => setIsCrewModalOpen(true)}
+          onMouseEnter={preloadCrewModalImages}
+          onFocus={preloadCrewModalImages}
           className="text-sm text-zinc-400 hover:text-white transition-colors"
         >
           See all
